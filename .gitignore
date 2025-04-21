@@ -172,3 +172,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Configs
+configs/personality.yaml
+configs/exception_message.yaml
+
+# Data
+data/
+
+# Temporary files
+tmp/
