@@ -6,6 +6,7 @@ import os
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
+from src import split_markdown_message
 from src.llm.factory import get_llm_service
 from src.vector_store.factory import get_vector_store
 
@@ -67,7 +68,14 @@ class ConversationCog(commands.Cog):
                 # --- response and memory update ---
                 if bot_response:
                     # send response
-                    await message.author.send(bot_response)
+                    chunk_size = 2000   # Discord message limit is 2000 characters
+                    if len(bot_response) > 2000:
+                        chunks = split_markdown_message(bot_response, chunk_size)
+                        for chunk in chunks:
+                            await message.author.send(chunk)
+                    else:
+                        await message.author.send(bot_response)
+                    
                     log.info(f"Sent response to user {user_id}: {bot_response[:50]}...")
 
                     # update short-term memory (user input + bot response)
