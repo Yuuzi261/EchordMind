@@ -57,12 +57,8 @@ class MemoryService:
             # A more optimized method would be to only summarize the oldest part.
             history_to_summarize = list(user_memory)
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history_to_summarize])
-            
-            log.info(f"History to summarize: {history_text[:100]}...")
 
             summary = await self.llm_service.summarize_conversation(history_text, self.summarization_prompt)
-            
-            log.info(f"Summarization result: {summary[:100]}...")
 
             if summary:
                 log.info(f"Generated summary for user {user_id}: {summary[:100]}...")
@@ -106,7 +102,7 @@ class MemoryService:
             # Format the retrieved documents as RAG context
             context = "\n".join([f"- {doc}" for doc in relevant_docs])
             formatted_rag_context = self.rag_prompt_prefix.format(relevant_memories=context)
-            # log.debug(f"Formatted RAG context for user {user_id}: {formatted_rag_context[:100]}...")
+            log.debug(f"Formatted RAG context for user {user_id}: {formatted_rag_context[:100]}...")
             return formatted_rag_context
         else:
             # log.info(f"No relevant memories found for user {user_id}.")

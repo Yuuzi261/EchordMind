@@ -43,7 +43,7 @@ class ChromaVectorStore(VectorStoreInterface):
                 metadatas=[{"user_id": user_id}],
                 ids=[doc_id]
             )
-            # log.debug(f"Memory added for user {user_id}: {text[:50]}...")
+            log.debug(f"Memory added for user {user_id}: {text[:50]}...")
         except Exception as e:
             log.error(f"Error adding memory to ChromaDB for user {user_id}: {e}")
 

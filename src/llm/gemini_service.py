@@ -41,9 +41,7 @@ class GeminiAssistant(LLMServiceInterface):
             full_history.extend(history)
 
             system_instruction = self._format_history(full_history)
-            
-            # for debug
-            # log.info(f"Gemini system instruction: {system_instruction}")
+            log.debug(f"system instruction: {system_instruction}")
 
             # Call the Gemini API to generate response
             response = await self.client.aio.models.generate_content(
@@ -105,8 +103,7 @@ class GeminiAssistant(LLMServiceInterface):
                     'output_dimensionality': 64 #TODO: set the embedding dimension (config option & find a better value)
                 }
             )
-            # log.debug(f"Embedding generated for text: {text[:50]}...")
-            # log.info(result.embeddings[0].values)
+            log.debug(f"Embedding result: {result.embeddings[0].values}")
             return result.embeddings[0].values
         except Exception as e:
             log.error(f"Error getting embedding from Gemini: {e}", exc_info=True)

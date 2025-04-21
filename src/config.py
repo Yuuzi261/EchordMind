@@ -10,9 +10,15 @@ class AppConfig:
     """
     Loads application configuration from YAML files.
     """
-    def __init__(self, personality_config_path: str = "configs/personality.yaml", exception_message_config_path: str = "configs/exception_message.yaml"):
+    def __init__(
+        self,
+        personality_config_path: str = "configs/personality.yaml",
+        exception_message_config_path: str = "configs/exception_message.yaml",
+        role_settings_config_path: str = "configs/role_settings.yaml"
+    ):
         self._personality_config_path = personality_config_path
         self._exception_message_config_path = exception_message_config_path
+        self._role_settings_config_path = role_settings_config_path
 
         # personality default settings
         self.system_prompt: str = "You are a friendly AI assistant."
@@ -29,6 +35,10 @@ class AppConfig:
         self.content_moderation_error: str = "Sorry, I cannot process this request, it may have triggered safety restrictions."
         self.unknown_response_error: str = "Sorry, an error occurred and I could not generate a response."
         self.service_error: str = "Sorry, I'm having a little trouble thinking, please try again later."
+        
+        # role settings
+        self.user_role: str = "user"
+        self.model_role: str = "model"
 
         self._load_configs()
 
@@ -69,3 +79,8 @@ class AppConfig:
         self.content_moderation_error = exception_message_data.get("CONTENT_MODERATION_ERROR", self.content_moderation_error)
         self.unknown_response_error = exception_message_data.get("UNKNOWN_RESPONSE_ERROR", self.unknown_response_error)
         self.service_error = exception_message_data.get("SERVICE_ERROR", self.service_error)
+        
+        # role settings
+        role_settings_data = self._load_yaml_config(self._role_settings_config_path, "Role settings")
+        self.user_role = role_settings_data.get("user_role", self.user_role)
+        self.model_role = role_settings_data.get("model_role", self.model_role)

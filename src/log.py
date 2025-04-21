@@ -63,12 +63,13 @@ def setup_logger(module_name: str) -> logging.Logger:
     # create logger
     library, _, _ = module_name.partition('.py')
     logger = logging.getLogger(library)
-    logger.setLevel(logging.INFO)
+    log_level = fetch_log_level()
+    logger.setLevel(log_level)
 
     if not logger.handlers:
         # create console handler
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
+        console_handler.setLevel(log_level)
         console_handler.setFormatter(ConsoleFormatter())
 
         # specify that the log file path is the same as `main.py` file path
@@ -90,3 +91,18 @@ def setup_logger(module_name: str) -> logging.Logger:
         logger.addHandler(console_handler)
 
     return logger
+
+def fetch_log_level():
+    """Fetch the log level from the environment variable."""
+    log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
+
+    log_level_map = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+
+    log_level = log_level_map.get(log_level_str, logging.INFO)
+    return log_level
