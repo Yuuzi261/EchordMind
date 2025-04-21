@@ -20,6 +20,9 @@ class ConversationCog(commands.Cog):
         # load exception message settings
         self.no_response_exception = config.no_response_exception
         self.unknown_exception = config.unknown_exception
+        # load role settings
+        self.user_role = config.user_role
+        self.model_role = config.model_role
         
 
     @commands.Cog.listener()
@@ -68,8 +71,8 @@ class ConversationCog(commands.Cog):
                     log.info(f"Sent response to user {user_id}: {bot_response[:50]}...")
 
                     # update short-term memory (user input + bot response)
-                    await self.memory_service.add_message(user_id, "user", user_input)
-                    await self.memory_service.add_message(user_id, "model", bot_response) # Gemini 的角色是 model
+                    await self.memory_service.add_message(user_id, self.user_role, user_input)
+                    await self.memory_service.add_message(user_id, self.model_role, bot_response)
 
                 else:
                     # if LLM API returns no valid response
