@@ -1,0 +1,135 @@
+from google import genai
+from google.genai import types
+from src import setup_logger, AppConfig
+from typing import List, Dict, Optional
+from .base import LLMServiceInterface
+
+log = setup_logger(__name__)
+
+class GeminiAssistant(LLMServiceInterface):
+    DEFAULT_GENERATION_MODEL = "gemini-2.0-flash"
+    DEFAULT_EMBEDDING_MODEL = "embedding-001"
+    
+    def __init__(self, api_key: str, model_name: str, embedding_model_name: str, config: AppConfig):
+        try:
+            self.client = genai.Client(api_key=api_key)
+            log.info("Google Generative AI configured successfully.")
+        except Exception as e:
+            log.error(f"Failed to configure Google Generative AI: {e}")
+            raise
+        
+        self.generation_model = self._validate_model(model_name, "generation", self.DEFAULT_GENERATION_MODEL)
+        self.embedding_model = self._validate_model(embedding_model_name, "embedding", self.DEFAULT_EMBEDDING_MODEL)
+        
+        self.history_separate_prompt = config.history_separate_prompt
+        
+        self.content_moderation_error = config.content_moderation_error
+        self.unknown_response_error = config.unknown_response_error
+        self.service_error = config.service_error
+        
+
+    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None) -> Optional[str]:
+        try:
+            # construct the complete context
+            full_history = [{"role": "system", "content": system_prompt}] # simulate system prompt
+            if rag_context:
+                full_history.append({"role": "system", "content": f"Long-term memory: {rag_context}"}) # Inject RAG context as a system message
+            
+            full_history.append({"role": "system", "content": self.history_separate_prompt})
+                
+            # Insert the conversation history after the RAG context (if present)
+            full_history.extend(history)
+
+            system_instruction = self._format_history(full_history)
+            
+            log.info(f"Gemini system instruction: {system_instruction}")
+
+            # Call the Gemini API to generate response
+            response = await self.client.aio.models.generate_content(
+                model=self.generation_model,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.5
+                ),
+                contents=user_input
+            )
+
+            # check if response is empty
+            if response:
+                return response.text
+            elif response.prompt_feedback: #TODO: check if prompt feedback exists
+                log.warning(f"Gemini call blocked or failed. Feedback: {response.prompt_feedback}")
+                return self.content_moderation_error
+            else:
+                log.error(f"Gemini returned an empty response or unexpected format: {response}")
+                return self.unknown_response_error
+
+        except Exception as e:
+            log.error(f"Error generating response from Gemini: {e}", exc_info=True)
+            #TODO consider more fine-grained error handling, e.g., API rate limit
+            return self.service_error
+
+    async def summarize_conversation(self, conversation_history: str, summarization_prompt: str) -> Optional[str]:
+        """use the LLM to summarize the conversation content"""
+        try:
+            response = await self.client.aio.models.generate_content(
+                model=self.generation_model,
+                config=types.GenerateContentConfig(
+                    system_instruction=summarization_prompt,
+                    temperature=0.1
+                ),
+                contents=conversation_history
+            )
+            if response:
+                log.info("Summarization successful.")
+                log.info(f"Summarization result: {response.text}...")
+                return response.text
+            elif response.prompt_feedback: #TODO: check if prompt feedback exists
+                log.warning(f"Gemini summarization blocked. Feedback: {response.prompt_feedback}")
+                return None # or return an error message
+            else:
+                log.error(f"Gemini summarization returned empty response: {response}")
+                return None
+        except Exception as e:
+            log.error(f"Error summarizing conversation with Gemini: {e}", exc_info=True)
+            return None
+
+    async def get_embedding(self, text: str) -> Optional[List[float]]:
+        """get the embedding vector of the text"""
+        try:
+            result = await self.client.aio.models.embed_content(
+                model=self.embedding_model,
+                contents=[text],
+                config={
+                    'output_dimensionality': 64 #TODO: set the embedding dimension (config option & find a better value)
+                }
+            )
+            # log.debug(f"Embedding generated for text: {text[:50]}...")
+            # log.info(result.embeddings[0].values)
+            return result.embeddings[0].values
+        except Exception as e:
+            log.error(f"Error getting embedding from Gemini: {e}", exc_info=True)
+            return None
+        
+    def _validate_model(self, model_name: str, model_type: str, default_model: str) -> str:
+        """check if the specified model is available, otherwise use the default model"""
+        try:
+            self.client.models.get(model=model_name)
+            log.info(f"{model_type.capitalize()} model '{model_name}' validated successfully.")
+            return model_name
+        except:
+            log.warning(
+                f"{model_type.capitalize()} model '{model_name}' is not available. "
+                f"Using default model '{default_model}'."
+            )
+            return default_model
+        
+    def _format_history(self, history: List[Dict[str, str]]) -> List[Dict[str, any]]:
+        """transform internal history record to the format accepted by the Gemini API"""
+        formatted = []
+        for item in history:
+            if item['role'] == 'system':
+                formatted.append(item['content'])
+            else:
+                formatted.append(f"{item['role']}: {item['content']}")
+        return formatted
