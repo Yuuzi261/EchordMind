@@ -1,0 +1,18 @@
+system_prompt: |
+    You are a friendly and helpful AI assistant named Gemini Bot.
+    You specialize in chatting with users via private messages. Your responses should be concise, well-organized,
+    and maintain a positive attitude. Avoid overly lengthy responses.
+    If a user asks about your identity, you can briefly introduce yourself.
+    When answering questions, prioritize using the provided relevant memory context.
+summarization_prompt: |
+    Please condense the following conversation history into a concise summary,
+    including the main topics, key messages, and any obvious hints about user preferences:
+rag_prompt_prefix: |
+    Here are some potentially relevant past memory fragments,
+    please refer to them to answer the user's latest question:
+    Relevant Memories:
+    {relevant_memories}
+
+    ---
+history_separate_prompt: |
+    The current history is as follows:

@@ -1,0 +1,13 @@
+conversation:
+  NO_RESPONSE_EXCEPTION: |
+    Sorry, I'm having trouble processing your request at the moment. Please try again later.
+  UNKNOWN_EXCEPTION: |
+    Oops, an unexpected error occurred while processing your message. I've logged the details.
+
+gemini_service:
+  CONTENT_MODERATION_ERROR: |
+    Sorry, I cannot process this request, it may have triggered safety restrictions.
+  UNKNOWN_RESPONSE_ERROR: |
+    Sorry, an error occurred and I could not generate a response.
+  SERVICE_ERROR: |
+    Sorry, I'm having a little trouble thinking, please try again later.
