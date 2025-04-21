@@ -18,10 +18,17 @@ class AppConfig:
         self.system_prompt: str = "You are a friendly AI assistant."
         self.summarization_prompt: str = "Please summarize the following conversation:\n"
         self.rag_prompt_prefix: str = "Relevant memories:\n{relevant_memories}\n---\n"
+        self.history_separate_prompt: str = "The current history is as follows:"
         
         # exception message default settings
+        # conversation
         self.no_response_exception: str = "Sorry, I'm having trouble processing your request at the moment. Please try again later."
         self.unknown_exception: str = "Oops, an unexpected error occurred while processing your message. I've logged the details."
+        
+        # gemini service
+        self.content_moderation_error: str = "Sorry, I cannot process this request, it may have triggered safety restrictions."
+        self.unknown_response_error: str = "Sorry, an error occurred and I could not generate a response."
+        self.service_error: str = "Sorry, I'm having a little trouble thinking, please try again later."
 
         self._load_configs()
 
@@ -50,8 +57,15 @@ class AppConfig:
         self.system_prompt = personality_data.get("system_prompt", self.system_prompt)
         self.summarization_prompt = personality_data.get("summarization_prompt", self.summarization_prompt)
         self.rag_prompt_prefix = personality_data.get("rag_prompt_prefix", self.rag_prompt_prefix)
+        self.history_separate_prompt = personality_data.get("history_separate_prompt", self.history_separate_prompt)
 
         # Load exception message config
+        # conversation
         exception_message_data = self._load_yaml_config(self._exception_message_config_path, "Exception message")
         self.no_response_exception = exception_message_data.get("NO_RESPONSE_EXCEPTION", self.no_response_exception)
         self.unknown_exception = exception_message_data.get("UNKNOWN_EXCEPTION", self.unknown_exception)
+        
+        # gemini service
+        self.content_moderation_error = exception_message_data.get("CONTENT_MODERATION_ERROR", self.content_moderation_error)
+        self.unknown_response_error = exception_message_data.get("UNKNOWN_RESPONSE_ERROR", self.unknown_response_error)
+        self.service_error = exception_message_data.get("SERVICE_ERROR", self.service_error)

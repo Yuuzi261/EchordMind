@@ -42,7 +42,8 @@ class GeminiAssistant(LLMServiceInterface):
 
             system_instruction = self._format_history(full_history)
             
-            log.info(f"Gemini system instruction: {system_instruction}")
+            # for debug
+            # log.info(f"Gemini system instruction: {system_instruction}")
 
             # Call the Gemini API to generate response
             response = await self.client.aio.models.generate_content(
