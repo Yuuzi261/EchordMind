@@ -5,6 +5,8 @@ from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.vector_store import VectorStoreInterface
 
+from src.utils.core_utils import insert_timestamp, create_system_message
+
 log = setup_logger(__name__)
 
 class MemoryService:
@@ -14,7 +16,7 @@ class MemoryService:
         # Use a dictionary to store short-term memory for each user {user_id: deque}
         self.short_term_memory: Dict[str, deque] = {}
         # Set the maximum length of short-term memory (number of conversation turns)
-        #TODO The triggering mechanism needs further adjustment.
+        # TODO The triggering mechanism needs further adjustment.
         self.max_history_length = 20  # For example, keep the last 10 conversation turns (user+bot)
         # Set the conversation length threshold to trigger summarization
         self.summarization_threshold = 16  # Trigger summarization when the conversation reaches 8 turns
@@ -24,6 +26,7 @@ class MemoryService:
         # load config settings
         self.summarization_prompt = config.summarization_prompt
         self.rag_prompt_prefix = config.rag_prompt_prefix
+        self.system_timestamp_prompt = config.system_timestamp_prompt
 
 
     def _get_user_memory(self, user_id: str) -> deque:
@@ -55,7 +58,7 @@ class MemoryService:
             # Extract the part that needs summarizing (e.g., all dialogue except the most recent turns)
             # This simply summarizes the entire current deque and then replaces the old one.
             # A more optimized method would be to only summarize the oldest part.
-            history_to_summarize = self.llm_service.insert_timestamp(list(user_memory))
+            history_to_summarize = insert_timestamp(list(user_memory), self.system_timestamp_prompt)
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history_to_summarize])
 
             summary = await self.llm_service.summarize_conversation(history_text, self.summarization_prompt)
@@ -72,7 +75,7 @@ class MemoryService:
                 # For example, keep the summary and the most recent 4 turns of conversation
                 keep_recent_n = 4
                 new_memory = deque(maxlen=self.max_history_length)
-                new_memory.append(self.llm_service.create_system_message(f"Previous conversation summary: {summary}"))  # Add the summary as a system message
+                new_memory.append(create_system_message(f"Previous conversation summary: {summary}"))  # Add the summary as a system message
                 if len(history_to_summarize) > keep_recent_n:
                     for msg in history_to_summarize[-keep_recent_n:]:
                         new_memory.append(msg)

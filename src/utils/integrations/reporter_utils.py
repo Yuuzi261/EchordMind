@@ -20,7 +20,3 @@ async def weather_period_reporter(timezone, locale=None):
         sky_weather = weather.description
 
     return now.strftime('%Y-%m-%d'), period, sky_weather
-
-def timestamp_formatter(timestamp: datetime) -> str:
-    """format the timestamp to a standard format to YYYY-MM-DD hh:mm"""
-    return timestamp.strftime('%Y-%m-%d %H:%M')

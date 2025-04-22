@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
 from typing import List, Dict, Optional
-
-from src import timestamp_formatter
 
 class LLMService(ABC):
     @abstractmethod
@@ -70,44 +67,6 @@ class LLMServiceInterface(ABC):
             The embedding vector (list of floats), or None if failed.
         """
         pass
-    
-    def insert_timestamp(self, history: List[Dict[str, str]]) -> List[Dict[str, str]]:
-        """
-        Insert timestamp to the history record (as a system prompt).
-        
-        Args:
-            history: The conversation history record.
-            
-        Returns:
-            The updated history record with timestamp.
-        """
-        if not history:
-            return history
-        
-        tmp_timestamp = datetime.fromisoformat(history[0]['timestamp'])
-        formatted = [self.create_system_message(self.system_timestamp_prompt.format(timestamp=timestamp_formatter(tmp_timestamp))), history[0]]
-        for item in history[1:]:
-            if item['timestamp']:
-                time_delta = datetime.fromisoformat(item['timestamp']) - tmp_timestamp
-                if time_delta > timedelta(minutes=5):
-                    tmp_timestamp = datetime.fromisoformat(item['timestamp'])
-                    formatted.append(self.create_system_message(self.system_timestamp_prompt.format(timestamp=timestamp_formatter(tmp_timestamp))))
-
-            formatted.append(item)
-        
-        return formatted
-    
-    def create_system_message(self, system_prompt: str) -> Dict[str, str]:
-        """
-        Create a system message with the specified system prompt.
-        
-        Args:
-            system_prompt: The system prompt to be included in the system message.
-            
-        Returns:
-            The system message dictionary.
-        """
-        return {"role": "system", "content": system_prompt}
     
     @abstractmethod
     def _validate_model(self, model_name: str, model_type: str, default_model: str) -> str:

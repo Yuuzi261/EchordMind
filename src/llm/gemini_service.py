@@ -1,7 +1,8 @@
 from google import genai
 from google.genai import types
-from datetime import datetime, timedelta
-from src import setup_logger, weather_period_reporter, timestamp_formatter
+from src import setup_logger
+from src.utils.core_utils import insert_timestamp, create_system_message
+from src.utils.integrations import weather_period_reporter
 from src import AppConfig
 from typing import List, Dict, Optional
 from .base import LLMServiceInterface
@@ -35,18 +36,18 @@ class GeminiAssistant(LLMServiceInterface):
     async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None) -> Optional[str]:
         try:
             # construct the complete context
-            full_history = self.create_system_message(system_prompt) # simulate system prompt
+            full_history = [create_system_message(system_prompt)] # simulate system prompt
             if rag_context:
-                full_history.append(self.create_system_message(f"Long-term memory: {rag_context}")) # Inject RAG context as a system message
+                full_history.append(create_system_message(f"Long-term memory: {rag_context}")) # Inject RAG context as a system message
             
-            full_history.append(self.create_system_message(self.history_separate_prompt))
+            full_history.append(create_system_message(self.history_separate_prompt))
            
             
-            timestamped_history = self.insert_timestamp(history)       # Insert timestamp to the history record
+            timestamped_history = insert_timestamp(history, self.system_timestamp_prompt)       # Insert timestamp to the history record
             full_history.extend(timestamped_history)                    # Insert the conversation history after the RAG context (if present)
             
             date, period, weather = await weather_period_reporter('Asia/Taipei')
-            full_history.append(self.create_system_message(self.weather_period_info_prompt.format(date=date, period=period, weather=weather)))
+            full_history.append(create_system_message(self.weather_period_info_prompt.format(date=date, period=period, weather=weather)))
 
             system_instruction = self._format_history(full_history)
             log.debug(f"system instruction: {system_instruction}")
