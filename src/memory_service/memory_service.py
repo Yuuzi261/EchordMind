@@ -75,7 +75,12 @@ class MemoryService:
                 # For example, keep the summary and the most recent 4 turns of conversation
                 keep_recent_n = 4
                 new_memory = deque(maxlen=self.max_history_length)
-                new_memory.append(create_system_message(f"Previous conversation summary: {summary}"))  # Add the summary as a system message
+                # TODO: Re-evaluate the use of summary as mid-term memory.
+                # TODO: The current approach conflicts with the insert_timestamp function.
+                # TODO: Exception handling could solve this timestamp conflict.
+                # TODO: However, adding a system role prompt to the history is not a wise choice.
+                # TODO: Therefore, the original intention is temporarily commented out.
+                # new_memory.append(create_system_message(f"Previous conversation summary: {summary}"))  # Add the summary as a system message
                 if len(history_to_summarize) > keep_recent_n:
                     for msg in history_to_summarize[-keep_recent_n:]:
                         new_memory.append(msg)
