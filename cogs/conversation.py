@@ -3,6 +3,7 @@ from discord.ext import commands
 from src import setup_logger
 import os
 from datetime import datetime
+from core import Cog_Extension
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
@@ -12,7 +13,7 @@ from src.vector_store.factory import get_vector_store
 
 log = setup_logger(__name__)
 
-class ConversationCog(commands.Cog):
+class ConversationCog(Cog_Extension):
     def __init__(self, bot: commands.Bot, llm_service: LLMServiceInterface, memory_service: MemoryService, config: AppConfig):
         self.bot = bot
         self.llm_service = llm_service
