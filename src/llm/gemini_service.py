@@ -1,6 +1,8 @@
 from google import genai
 from google.genai import types
-from src import setup_logger, AppConfig
+from datetime import datetime, timedelta
+from src import setup_logger, weather_period_reporter, timestamp_formatter
+from src import AppConfig
 from typing import List, Dict, Optional
 from .base import LLMServiceInterface
 
@@ -22,6 +24,8 @@ class GeminiAssistant(LLMServiceInterface):
         self.embedding_model = self._validate_model(embedding_model_name, "embedding", self.DEFAULT_EMBEDDING_MODEL)
         
         self.history_separate_prompt = config.history_separate_prompt
+        self.weather_period_info_prompt = config.weather_period_info_prompt
+        self.system_timestamp_prompt = config.system_timestamp_prompt
         
         self.content_moderation_error = config.content_moderation_error
         self.unknown_response_error = config.unknown_response_error
@@ -31,14 +35,18 @@ class GeminiAssistant(LLMServiceInterface):
     async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None) -> Optional[str]:
         try:
             # construct the complete context
-            full_history = [{"role": "system", "content": system_prompt}] # simulate system prompt
+            full_history = self.create_system_message(system_prompt) # simulate system prompt
             if rag_context:
-                full_history.append({"role": "system", "content": f"Long-term memory: {rag_context}"}) # Inject RAG context as a system message
+                full_history.append(self.create_system_message(f"Long-term memory: {rag_context}")) # Inject RAG context as a system message
             
-            full_history.append({"role": "system", "content": self.history_separate_prompt})
-                
-            # Insert the conversation history after the RAG context (if present)
-            full_history.extend(history)
+            full_history.append(self.create_system_message(self.history_separate_prompt))
+           
+            
+            timestamped_history = self.insert_timestamp(history)       # Insert timestamp to the history record
+            full_history.extend(timestamped_history)                    # Insert the conversation history after the RAG context (if present)
+            
+            date, period, weather = await weather_period_reporter('Asia/Taipei')
+            full_history.append(self.create_system_message(self.weather_period_info_prompt.format(date=date, period=period, weather=weather)))
 
             system_instruction = self._format_history(full_history)
             log.debug(f"system instruction: {system_instruction}")
@@ -65,11 +73,12 @@ class GeminiAssistant(LLMServiceInterface):
 
         except Exception as e:
             log.error(f"Error generating response from Gemini: {e}", exc_info=True)
-            #TODO consider more fine-grained error handling, e.g., API rate limit
+            # TODO consider more fine-grained error handling, e.g., API rate limit
             return self.service_error
 
     async def summarize_conversation(self, conversation_history: str, summarization_prompt: str) -> Optional[str]:
         """use the LLM to summarize the conversation content"""
+        log.debug(f"Summarizing conversation history: {conversation_history}")
         try:
             response = await self.client.aio.models.generate_content(
                 model=self.generation_model,

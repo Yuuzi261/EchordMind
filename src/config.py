@@ -25,6 +25,8 @@ class AppConfig:
         self.summarization_prompt: str = "Please summarize the following conversation:\n"
         self.rag_prompt_prefix: str = "Relevant memories:\n{relevant_memories}\n---\n"
         self.history_separate_prompt: str = "The current history is as follows:"
+        self.weather_period_info_prompt: str = "Current Date: {date}; Current Period: {period}; Weather Summary: {weather}"
+        self.system_timestamp_prompt: str = "Current time: {timestamp}"
         
         # exception message default settings
         # conversation
@@ -68,6 +70,8 @@ class AppConfig:
         self.summarization_prompt = personality_data.get("summarization_prompt", self.summarization_prompt)
         self.rag_prompt_prefix = personality_data.get("rag_prompt_prefix", self.rag_prompt_prefix)
         self.history_separate_prompt = personality_data.get("history_separate_prompt", self.history_separate_prompt)
+        self.weather_period_info_prompt = personality_data.get("weather_period_info_prompt", self.weather_period_info_prompt)
+        self.system_timestamp_prompt = personality_data.get("system_timestamp_prompt", self.system_timestamp_prompt)
 
         # Load exception message config
         # conversation

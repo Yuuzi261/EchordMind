@@ -1,8 +1,8 @@
-# cogs/conversation.py
 import discord
 from discord.ext import commands
 from src import setup_logger
 import os
+from datetime import datetime
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
@@ -42,6 +42,7 @@ class ConversationCog(commands.Cog):
 
         user_id = str(message.author.id)
         user_input = message.content
+        user_input_timestamp = datetime.now().isoformat()
 
         log.info(f"Received DM from user {user_id}: {user_input[:50]}...")
 
@@ -76,11 +77,12 @@ class ConversationCog(commands.Cog):
                     else:
                         await message.author.send(bot_response)
                     
+                    bot_response_timestamp = datetime.now().isoformat()
                     log.info(f"Sent response to user {user_id}: {bot_response[:50]}...")
 
                     # update short-term memory (user input + bot response)
-                    await self.memory_service.add_message(user_id, self.user_role, user_input)
-                    await self.memory_service.add_message(user_id, self.model_role, bot_response)
+                    await self.memory_service.add_message(user_id, self.user_role, user_input, user_input_timestamp)
+                    await self.memory_service.add_message(user_id, self.model_role, bot_response, bot_response_timestamp)
 
                 else:
                     # if LLM API returns no valid response
