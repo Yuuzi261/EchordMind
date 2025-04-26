@@ -70,7 +70,7 @@ class MemoryService:
                 # 1. Store the summary in long-term memory (vector database)
                 summary_embedding = await self.llm_service.get_embedding(summary)
                 if summary_embedding:
-                    await self.vector_store.add_memory(user_id, f"{self.translator.t('prompt.conversation_summary')}{summary}", summary_embedding)
+                    await self.vector_store.add_memory(user_id, self.translator.t('prompt.conversation_summary', summary=summary), summary_embedding)
                     log.debug(f"Summary stored in vector store for user {user_id}.")
 
                 # 2. Update short-term memory: Keep the summary and the most recent turns

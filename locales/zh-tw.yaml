@@ -1,7 +1,7 @@
 zh-tw:
   prompt:
-    long_term_memory: 長期記憶：
-    conversation_summary: 對話摘要：
+    long_term_memory: 長期記憶：{rag_context}
+    conversation_summary: 對話摘要：{summary}
     history_separator: 以下為當前歷史訊息：
     timestamp_format: 現在時間：{timestamp}
     weather_period_info_format: 當前日期：{date}；當前時段：{period}；天氣摘要：{weather}

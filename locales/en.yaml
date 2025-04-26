@@ -1,7 +1,7 @@
 en:
   prompt:
-    long_term_memory: 'Long-term memory: '
-    conversation_summary: 'Conversation Summary: '
+    long_term_memory: Long-term memory: {rag_context}
+    conversation_summary: Conversation Summary: {summary}
     history_separator: 'The current history is as follows: '
     timestamp_format: Current time: {timestamp}
     weather_period_info_format: Current Date: {date}; Current Period: {period}; Weather Summary: {weather}

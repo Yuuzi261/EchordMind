@@ -38,7 +38,7 @@ class GeminiAssistant(LLMServiceInterface):
             # construct the complete context
             full_history = [create_system_message(system_prompt)] # simulate system prompt
             if rag_context:
-                full_history.append(create_system_message(f"{self.translator.t('prompt.long_term_memory')}{rag_context}")) # Inject RAG context as a system message
+                full_history.append(create_system_message(self.translator.t('prompt.long_term_memory', rag_context=rag_context))) # Inject RAG context as a system message
             
             full_history.append(create_system_message(self.translator.t('prompt.history_separator')))
            
