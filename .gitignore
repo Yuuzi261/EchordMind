@@ -177,6 +177,7 @@ cython_debug/
 configs/personality.yaml
 configs/exception_message.yaml
 configs/role_settings.yaml
+configs/base_setting.yaml
 
 # Data
 data/

@@ -14,9 +14,3 @@ rag_prompt_prefix: |
     {relevant_memories}
 
     ---
-history_separate_prompt: |
-    The current history is as follows:
-weather_period_info_prompt: |
-    Current Date: {date}; Current Period: {period}; Weather Summary: {weather}
-system_timestamp_prompt: |
-    Current time: {timestamp}

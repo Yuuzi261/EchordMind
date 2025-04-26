@@ -105,10 +105,7 @@ async def setup(bot: commands.Bot):
         log.error("GEMINI_API_KEY not found in environment variables!")
         raise ValueError("GEMINI_API_KEY is required.")
 
-    config = AppConfig(
-        personality_config_path="configs/personality.yaml",
-        exception_message_config_path="configs/exception_message.yaml"
-    )
+    config = AppConfig()
 
     vector_db_path = "data/"                    # set the path to the ChromaDB persistence path
 

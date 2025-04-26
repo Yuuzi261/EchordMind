@@ -1,0 +1,13 @@
+en:
+  prompt:
+    long_term_memory: 'Long-term memory: '
+    conversation_summary: 'Conversation Summary: '
+    history_separator: 'The current history is as follows: '
+    timestamp_format: Current time: {timestamp}
+    weather_period_info_format: Current Date: {date}; Current Period: {period}; Weather Summary: {weather}
+    period:
+      early: early morning
+      morning: morning
+      afternoon: afternoon
+      evening: evening
+      night: midnight

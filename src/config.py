@@ -12,21 +12,23 @@ class AppConfig:
     """
     def __init__(
         self,
+        base_setting_config_path: str = "configs/base_setting.yaml",
         personality_config_path: str = "configs/personality.yaml",
         exception_message_config_path: str = "configs/exception_message.yaml",
         role_settings_config_path: str = "configs/role_settings.yaml"
     ):
+        self._base_setting_config_path = base_setting_config_path
         self._personality_config_path = personality_config_path
         self._exception_message_config_path = exception_message_config_path
         self._role_settings_config_path = role_settings_config_path
+        
+        # base setting default settings
+        self.lang: str = "en"
 
         # personality default settings
         self.system_prompt: str = "You are a friendly AI assistant."
         self.summarization_prompt: str = "Please summarize the following conversation:\n"
         self.rag_prompt_prefix: str = "Relevant memories:\n{relevant_memories}\n---\n"
-        self.history_separate_prompt: str = "The current history is as follows:"
-        self.weather_period_info_prompt: str = "Current Date: {date}; Current Period: {period}; Weather Summary: {weather}"
-        self.system_timestamp_prompt: str = "Current time: {timestamp}"
         
         # exception message default settings
         # conversation
@@ -64,14 +66,15 @@ class AppConfig:
 
     def _load_configs(self):
         """Loads all necessary configuration files."""
+        # Load base config
+        self.base_setting_data = self._load_yaml_config(self._base_setting_config_path, "Base setting")
+        self.lang = self.base_setting_data.get("lang", self.lang)
+        
         # Load personality config
         personality_data = self._load_yaml_config(self._personality_config_path, "Personality")
         self.system_prompt = personality_data.get("system_prompt", self.system_prompt)
         self.summarization_prompt = personality_data.get("summarization_prompt", self.summarization_prompt)
         self.rag_prompt_prefix = personality_data.get("rag_prompt_prefix", self.rag_prompt_prefix)
-        self.history_separate_prompt = personality_data.get("history_separate_prompt", self.history_separate_prompt)
-        self.weather_period_info_prompt = personality_data.get("weather_period_info_prompt", self.weather_period_info_prompt)
-        self.system_timestamp_prompt = personality_data.get("system_timestamp_prompt", self.system_timestamp_prompt)
 
         # Load exception message config
         # conversation
