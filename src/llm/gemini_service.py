@@ -27,6 +27,8 @@ class GeminiAssistant(LLMServiceInterface):
         
         self.lang = config.lang
         self.translator = Translator(self.lang)
+        self.enable_timestamp_prompt = config.enable_timestamp_prompt
+        self.enable_weather_period_prompt = config.enable_weather_period_prompt
         
         self.content_moderation_error = config.content_moderation_error
         self.unknown_response_error = config.unknown_response_error
@@ -42,12 +44,15 @@ class GeminiAssistant(LLMServiceInterface):
             
             full_history.append(create_system_message(self.translator.t('prompt.history_separator')))
            
+            if self.enable_timestamp_prompt:
+                timestamped_history = insert_timestamp(history, self.translator.t('prompt.timestamp_format'))    # Insert timestamp to the history record
+                full_history.extend(timestamped_history)                                                         # Insert the conversation history after the RAG context (if present)
+            else:
+                full_history.extend(history)
             
-            timestamped_history = insert_timestamp(history, self.translator.t('prompt.timestamp_format'))    # Insert timestamp to the history record
-            full_history.extend(timestamped_history)                                                                            # Insert the conversation history after the RAG context (if present)
-            
-            date, period, weather = await weather_period_reporter('Asia/Taipei', lang=self.lang, location='Taipei') # TODO: time zone and location should be configurable
-            full_history.append(create_system_message(self.translator.t('prompt.weather_period_info_format', date=date, period=period, weather=weather)))
+            if self.enable_weather_period_prompt:
+                date, period, weather = await weather_period_reporter('Asia/Taipei', lang=self.lang, location='Taipei') # TODO: time zone and location should be configurable
+                full_history.append(create_system_message(self.translator.t('prompt.weather_period_info_format', date=date, period=period, weather=weather)))
 
             system_instruction = self._format_history(full_history)
             log.debug(f"system instruction: {system_instruction}")
