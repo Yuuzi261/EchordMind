@@ -4,6 +4,8 @@
 
 請在提交問題或拉取請求（Pull Request, PR）之前閱讀本文件，以確保我們能獲得所有必要資訊，順利協助您。
 
+切換語言：[English](https://github.com/Yuuzi261/EchordMind/blob/main/docs/CONTRIBUTING.md) | [繁體中文](https://github.com/Yuuzi261/EchordMind/blob/main/docs/zh-tw/CONTRIBUTING_zh.md)
+
 ## 貢獻方式
 
 您可以透過以下方式為 EchordMind 做出貢獻：

@@ -4,6 +4,8 @@ Thank you for your interest in EchordMind! We welcome all forms of contributions
 
 Please read this document before submitting issues or pull requests (PRs) to ensure we have all the necessary details to assist you effectively.
 
+Switch Language: [English](https://github.com/Yuuzi261/EchordMind/blob/main/docs/CONTRIBUTING.md) | [繁體中文](https://github.com/Yuuzi261/EchordMind/blob/main/docs/zh-tw/CONTRIBUTING_zh.md)
+
 ## Ways to Contribute
 
 You can contribute to EchordMind in the following ways:

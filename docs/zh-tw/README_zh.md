@@ -13,6 +13,8 @@ EchordMind 是一個利用 AI 在 Discord 上進行智慧、具上下文感知�
 > [!NOTE]
 > EchordMind是一個暫定的名字，如果你有更好的點子，歡迎提出
 
+切換語言：[English](https://github.com/Yuuzi261/EchordMind/blob/main/docs/README.md) | [繁體中文](https://github.com/Yuuzi261/EchordMind/blob/main/docs/zh-tw/README_zh.md)
+
 ## 功能
 
 - **對話處理**：在私訊中與用戶進行具上下文感知的回應。
@@ -123,7 +125,6 @@ EchordMind 結合短期和長期記憶來維持對話上下文：
 ## 貢獻
 
 歡迎貢獻！請閱讀 [貢獻指南](https://github.com/Yuuzi261/EchordMind/blob/main/docs/CONTRIBUTING.md) 以了解如何貢獻，包括編碼標準和工作流程。
-~~_不過在這之前可能要先有人幫我寫好這個檔案，因為我還沒想好 CONTRIBUTING.md 的內容應該怎麼寫。_~~
 
 ## 許可證
 

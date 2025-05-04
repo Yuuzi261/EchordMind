@@ -13,6 +13,8 @@ The above description was written by AI. Simply put, you can create your best bu
 > [!NOTE]
 > The name "EchordMind" is tentative. If you have a better idea, feel free to suggest one.
 
+Switch Language: [English](https://github.com/Yuuzi261/EchordMind/blob/main/docs/README.md) | [繁體中文](https://github.com/Yuuzi261/EchordMind/blob/main/docs/zh-tw/README_zh.md)
+
 ## Features
 
 - **Conversation Handling**: Responds to users in direct messages with context-aware replies.
@@ -118,8 +120,7 @@ This system enables the bot to maintain coherent, context-aware conversations ac
 
 ## Contribution
 
-Contributions are welcome! Please read the [Contribution Guide](https://github.com/Yuuzi261/EchordMind/blob/main/docs/CONTRIBUTING.md) to learn how to contribute, including coding standards and workflow.  
-~~_But before that, someone might need to help me write this file, as I haven’t figured out what the CONTRIBUTING.md should contain._~~
+Contributions are welcome! Please read the [Contribution Guide](https://github.com/Yuuzi261/EchordMind/blob/main/docs/CONTRIBUTING.md) to learn how to contribute, including coding standards and workflow.
 
 ## License
 
