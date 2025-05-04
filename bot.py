@@ -53,7 +53,7 @@ async def on_ready():
 async def on_error(event, *args, **kwargs):
     log.error(f"Unhandled error in event {event}:", exc_info=True)
 
-#TODO Currently unsure how to pass the global config to cogs
+# TODO Currently unsure how to pass the global config to cogs
 # # --- Load Configuration ---
 # def load_config():
 #     log.info("Loading application configuration...")

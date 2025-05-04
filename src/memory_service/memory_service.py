@@ -83,11 +83,11 @@ class MemoryService:
                 # TODO: However, adding a system role prompt to the history is not a wise choice.
                 # TODO: Therefore, the original intention is temporarily commented out.
                 # new_memory.append(create_system_message(f"Previous conversation summary: {summary}"))  # Add the summary as a system message
-                if len(history_to_summarize) > keep_recent_n:
-                    for msg in history_to_summarize[-keep_recent_n:]:
+                if len(user_memory) > keep_recent_n:
+                    for msg in user_memory[-keep_recent_n:]:
                         new_memory.append(msg)
                 else: # If history length is less than keep_recent_n, keep all
-                     for msg in history_to_summarize:
+                     for msg in user_memory:
                         new_memory.append(msg)
 
 
