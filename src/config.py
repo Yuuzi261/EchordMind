@@ -81,15 +81,17 @@ class AppConfig:
         self.rag_prompt_prefix = personality_data.get("rag_prompt_prefix", self.rag_prompt_prefix)
 
         # Load exception message config
-        # conversation
         exception_message_data = self._load_yaml_config(self._exception_message_config_path, "Exception message")
-        self.no_response_exception = exception_message_data.get("NO_RESPONSE_EXCEPTION", self.no_response_exception)
-        self.unknown_exception = exception_message_data.get("UNKNOWN_EXCEPTION", self.unknown_exception)
+        # conversation
+        conversation_data = exception_message_data.get("conversation", {})
+        self.no_response_exception = conversation_data.get("NO_RESPONSE_EXCEPTION", self.no_response_exception)
+        self.unknown_exception = conversation_data.get("UNKNOWN_EXCEPTION", self.unknown_exception)
         
         # gemini service
-        self.content_moderation_error = exception_message_data.get("CONTENT_MODERATION_ERROR", self.content_moderation_error)
-        self.unknown_response_error = exception_message_data.get("UNKNOWN_RESPONSE_ERROR", self.unknown_response_error)
-        self.service_error = exception_message_data.get("SERVICE_ERROR", self.service_error)
+        gemini_service_data = exception_message_data.get("gemini_service", {})
+        self.content_moderation_error = gemini_service_data.get("CONTENT_MODERATION_ERROR", self.content_moderation_error)
+        self.unknown_response_error = gemini_service_data.get("UNKNOWN_RESPONSE_ERROR", self.unknown_response_error)
+        self.service_error = gemini_service_data.get("SERVICE_ERROR", self.service_error)
         
         # role settings
         role_settings_data = self._load_yaml_config(self._role_settings_config_path, "Role settings")
