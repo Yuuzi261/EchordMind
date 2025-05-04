@@ -3,6 +3,9 @@ from zoneinfo import ZoneInfo
 import python_weather
 
 from src.utils.core_utils import Translator
+from src import setup_logger
+
+log = setup_logger(__name__)
 
 async def weather_period_reporter(timezone, lang='en', location='New York'):
     # 1. time period summary
@@ -20,7 +23,11 @@ async def weather_period_reporter(timezone, lang='en', location='New York'):
     # 2. weather summary
     async with python_weather.Client() as client:
         # TODO setup locale based on location
-        weather = await client.get(location, unit=python_weather.IMPERIAL, locale=python_weather.Locale.CHINESE_TRADITIONAL_TAIWAN)
-        sky_weather = weather.description
+        try:
+            weather = await client.get(location, unit=python_weather.IMPERIAL, locale=python_weather.Locale.CHINESE_TRADITIONAL_TAIWAN)
+            sky_weather = weather.description
+        except Exception as e:
+            log.warning(f"Failed to get weather for location {location}: {e}")
+            sky_weather = 'Unknown'
 
     return now.strftime('%Y-%m-%d'), period, sky_weather
