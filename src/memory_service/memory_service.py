@@ -53,14 +53,14 @@ class MemoryService:
     # TODO This function's mechanism still needs significant optimization
     async def check_and_summarize(self, user_id: str):
         """check the conversation length and summarize if needed"""
-        user_memory = self._get_user_memory(user_id)
+        user_memory = list(self._get_user_memory(user_id))
         if len(user_memory) >= self.summarization_threshold:
             log.info(f"Summarization threshold reached for user {user_id}. Current length: {len(user_memory)}")
 
             # Extract the part that needs summarizing (e.g., all dialogue except the most recent turns)
             # This simply summarizes the entire current deque and then replaces the old one.
             # A more optimized method would be to only summarize the oldest part.
-            history_to_summarize = insert_timestamp(list(user_memory), self.translator.t('prompt.timestamp_format'))
+            history_to_summarize = insert_timestamp(user_memory, self.translator.t('prompt.timestamp_format'))
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history_to_summarize])
 
             summary = await self.llm_service.summarize_conversation(history_text, self.summarization_prompt)
