@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 from src import setup_logger
 import os
 from datetime import datetime
@@ -25,6 +26,8 @@ class ConversationCog(Cog_Extension):
         # load role settings
         self.user_role = config.user_role
         self.model_role = config.model_role
+        # dynamic settings
+        self.use_search = False
         
 
     @commands.Cog.listener()
@@ -64,7 +67,8 @@ class ConversationCog(Cog_Extension):
                     system_prompt=self.system_prompt,
                     history=short_term_history,
                     user_input=user_input,
-                    rag_context=relevant_memories
+                    rag_context=relevant_memories,
+                    use_search=self.use_search
                 )
 
                 # --- response and memory update ---
@@ -97,6 +101,20 @@ class ConversationCog(Cog_Extension):
                 except discord.errors.Forbidden:
                      log.error(f"Cannot send error message to user {user_id} (DM closed or blocked).")
 
+    toggle_group = app_commands.Group(name='toggle', description='Toggle something')
+
+    @toggle_group.command(name='search')
+    @app_commands.choices(state=[app_commands.Choice(name='🔍enabled', value=1), app_commands.Choice(name='🚫disabled', value=0)])
+    async def toggle_search(self, itn: discord.Interaction, state: int):
+        """Toggle search functionality
+
+        Parameters
+        -----------
+        state: int
+            Whether to enable or disable search functionality.
+        """
+        self.use_search = bool(state)
+        await itn.response.send_message(f"Search functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     """Cog's entry point, used for loading the Cog"""

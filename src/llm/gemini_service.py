@@ -1,5 +1,6 @@
 from google import genai
 from google.genai import types
+from google.genai.types import Tool, GoogleSearch
 from src import setup_logger
 from src.utils.core_utils import Translator
 from src.utils.core_utils import insert_timestamp, create_system_message
@@ -34,8 +35,10 @@ class GeminiAssistant(LLMServiceInterface):
         self.unknown_response_error = config.unknown_response_error
         self.service_error = config.service_error
         
+        self.google_search_tool = Tool(google_search=GoogleSearch())
+        
 
-    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None) -> Optional[str]:
+    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None, use_search: bool = False) -> Optional[str]:
         try:
             # construct the complete context
             full_history = [create_system_message(system_prompt)] # simulate system prompt
@@ -56,19 +59,25 @@ class GeminiAssistant(LLMServiceInterface):
 
             system_instruction = self._format_history(full_history)
             log.debug(f"system instruction: {system_instruction}")
+            
+            # Configure generation
+            gemini_config = types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                temperature=0.5
+            )
+            if use_search:
+                gemini_config.tools = [self.google_search_tool]
+                gemini_config.response_modalities = ["TEXT"]
 
             # Call the Gemini API to generate response
             response = await self.client.aio.models.generate_content(
                 model=self.generation_model,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=0.5
-                ),
+                config=gemini_config,
                 contents=user_input
             )
 
             # check if response is empty
-            if response:
+            if response.text:
                 return response.text
             elif response.prompt_feedback: #TODO: check if prompt feedback exists
                 log.warning(f"Gemini call blocked or failed. Feedback: {response.prompt_feedback}")
