@@ -17,7 +17,7 @@ log = setup_logger(__name__)
 
 translator = get_translator()
 TEMPULATURE_CHOICES = [
-    app_commands.Choice(name=translator.t(f'tempurature_level.{level}'), value=i*0.2)
+    app_commands.Choice(name=translator.t(f'tempurature_level.{level}'), value=round(i*0.2, 1))
         for i, level in enumerate([
             "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible", "balanced", 
             "creative", "highly_creative", "extremely_creative", "beyond_imagination", "crazy_mode"
