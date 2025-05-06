@@ -26,6 +26,7 @@ class AppConfig:
         self.lang: str = "en"
         self.enable_timestamp_prompt: bool = True
         self.enable_weather_period_prompt: bool = True
+        self.model_default_temperature: float = 1.0
 
         # personality default settings
         self.system_prompt: str = "You are a friendly AI assistant."
@@ -73,6 +74,7 @@ class AppConfig:
         self.lang = self.base_setting_data.get("lang", self.lang)
         self.enable_timestamp_prompt = self.base_setting_data.get("enable_timestamp_prompt", self.enable_timestamp_prompt)
         self.enable_weather_period_prompt = self.base_setting_data.get("enable_weather_period_prompt", self.enable_weather_period_prompt)
+        self.model_default_temperature = self.base_setting_data.get("model_default_temperature", self.model_default_temperature)
         
         # Load personality config
         personality_data = self._load_yaml_config(self._personality_config_path, "Personality")

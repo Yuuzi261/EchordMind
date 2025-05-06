@@ -11,3 +11,16 @@ zh-tw:
       afternoon: 下午
       evening: 傍晚
       night: 深夜
+
+  tempurature_level:
+    ultra_stable: 🧊極度穩定
+    very_stable: ❄️非常穩定
+    stable: 🪨穩定
+    moderate: 🌡️溫和
+    slightly_flexible: 🌿些微靈活
+    balanced: ⚖️平衡
+    creative: 🎨有創意 
+    highly_creative: 🌈富有創造力
+    extremely_creative: 🚀極具創造力
+    beyond_imagination: 🧠超乎想像
+    crazy_mode: 🤪瘋狂模式

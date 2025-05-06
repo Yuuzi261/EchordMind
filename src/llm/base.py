@@ -26,7 +26,7 @@ class LLMServiceInterface(ABC):
         pass
     
     @abstractmethod
-    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None) -> Optional[str]:
+    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None, temperature: float = 1.0, use_search: bool = False) -> Optional[str]:
         """
         Generate a response to a conversation.
         

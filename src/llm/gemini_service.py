@@ -38,7 +38,7 @@ class GeminiAssistant(LLMServiceInterface):
         self.google_search_tool = Tool(google_search=GoogleSearch())
         
 
-    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None, use_search: bool = False) -> Optional[str]:
+    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None, temperature: float = 1.0, use_search: bool = False) -> Optional[str]:
         try:
             # construct the complete context
             full_history = [create_system_message(system_prompt)] # simulate system prompt
@@ -63,7 +63,7 @@ class GeminiAssistant(LLMServiceInterface):
             # Configure generation
             gemini_config = types.GenerateContentConfig(
                 system_instruction=system_instruction,
-                temperature=0.5
+                temperature=temperature
             )
             if use_search:
                 gemini_config.tools = [self.google_search_tool]
@@ -79,7 +79,7 @@ class GeminiAssistant(LLMServiceInterface):
             # check if response is empty
             if response.text:
                 return response.text
-            elif response.prompt_feedback: #TODO: check if prompt feedback exists
+            elif response.prompt_feedback:
                 log.warning(f"Gemini call blocked or failed. Feedback: {response.prompt_feedback}")
                 return self.content_moderation_error
             else:

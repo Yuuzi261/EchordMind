@@ -11,3 +11,16 @@ en:
       afternoon: afternoon
       evening: evening
       night: midnight
+
+  tempurature_level:
+    ultra_stable: 🧊Ultra Stable
+    very_stable: :snowflake:Very Stable
+    stable: 🪨Stable
+    moderate: :thermometer:Moderate
+    slightly_flexible: 🌿Slightly Flexible
+    balanced: :scales:Balanced
+    creative: 🎨Creative
+    highly_creative: 🌈Highly Creative
+    extremely_creative: 🚀Extremely Creative
+    beyond_imagination: 🧠Beyond Imagination
+    crazy_mode: 🤪Crazy Mode

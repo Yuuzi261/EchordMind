@@ -8,25 +8,38 @@ from core import Cog_Extension
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
+from src.utils.core_utils import Translator
 from src import split_markdown_message
 from src.llm.factory import get_llm_service
 from src.vector_store.factory import get_vector_store
 
 log = setup_logger(__name__)
 
+translator = Translator(lang='zh-tw')
+TEMPULATURE_CHOICES = [
+    app_commands.Choice(name=translator.t(f'tempurature_level.{level}'), value=i*0.2)
+        for i, level in enumerate([
+            "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible", "balanced", 
+            "creative", "highly_creative", "extremely_creative", "beyond_imagination", "crazy_mode"
+])]
+
 class ConversationCog(Cog_Extension):
     def __init__(self, bot: commands.Bot, llm_service: LLMServiceInterface, memory_service: MemoryService, config: AppConfig):
-        self.bot = bot
+        super().__init__(bot)                
         self.llm_service = llm_service
         self.memory_service = memory_service
         self.system_prompt = config.system_prompt           # load AI personality settings
+        
         # load exception message settings
         self.no_response_exception = config.no_response_exception
         self.unknown_exception = config.unknown_exception
+        
         # load role settings
         self.user_role = config.user_role
         self.model_role = config.model_role
+        
         # dynamic settings
+        self.temperature = config.model_default_temperature
         self.use_search = False
         
 
@@ -68,6 +81,7 @@ class ConversationCog(Cog_Extension):
                     history=short_term_history,
                     user_input=user_input,
                     rag_context=relevant_memories,
+                    temperature=self.temperature,
                     use_search=self.use_search
                 )
 
@@ -115,6 +129,20 @@ class ConversationCog(Cog_Extension):
         """
         self.use_search = bool(state)
         await itn.response.send_message(f"Search functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
+        
+    @toggle_group.command(name='temperature')
+    @app_commands.choices(level=TEMPULATURE_CHOICES)
+    async def toggle_temperature(self, itn: discord.Interaction, level: float):
+        """Toggle the creativity level of LLM's response
+
+        Parameters
+        -----------
+        level: float
+            The temperature level of LLM's response.
+        """
+        self.temperature = level
+        await itn.response.send_message(f"Temperature level set to {level}.", ephemeral=True)
+
 
 async def setup(bot: commands.Bot):
     """Cog's entry point, used for loading the Cog"""
