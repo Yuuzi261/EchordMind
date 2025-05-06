@@ -131,17 +131,20 @@ class ConversationCog(Cog_Extension):
         await itn.response.send_message(f"Search functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
         
     @toggle_group.command(name='temperature')
-    @app_commands.choices(level=TEMPULATURE_CHOICES)
-    async def toggle_temperature(self, itn: discord.Interaction, level: float):
+    @app_commands.choices(temperature=TEMPULATURE_CHOICES)
+    @app_commands.rename(temperature="level")
+    async def toggle_temperature(self, itn: discord.Interaction, temperature: float):
         """Toggle the creativity level of LLM's response
 
         Parameters
         -----------
-        level: float
+        temperature: float
             The temperature level of LLM's response.
         """
-        self.temperature = level
-        await itn.response.send_message(f"Temperature level set to {level}.", ephemeral=True)
+        self.temperature = temperature
+        
+        choice_name = next((choice.name for choice in TEMPULATURE_CHOICES if choice.value == temperature), str(temperature))
+        await itn.response.send_message(f"Temperature level set to {choice_name}.", ephemeral=True)
 
 
 async def setup(bot: commands.Bot):
