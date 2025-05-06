@@ -12,6 +12,10 @@ en:
       evening: evening
       night: midnight
 
+  search_state:
+    enable: 🔍enable
+    disable: 🚫disable
+
   tempurature_level:
     ultra_stable: 🧊Ultra Stable
     very_stable: :snowflake:Very Stable

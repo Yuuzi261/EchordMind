@@ -12,6 +12,10 @@ zh-tw:
       evening: 傍晚
       night: 深夜
 
+  search_state:
+    enable: 🔍啟用
+    disable: 🚫停用
+
   tempurature_level:
     ultra_stable: 🧊極度穩定
     very_stable: ❄️非常穩定

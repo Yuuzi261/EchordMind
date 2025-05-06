@@ -16,6 +16,10 @@ from src.vector_store.factory import get_vector_store
 log = setup_logger(__name__)
 
 translator = get_translator()
+SEARCH_STATE_CHOICES = [
+    app_commands.Choice(name=translator.t('search_state.enable'), value=1), 
+    app_commands.Choice(name=translator.t('search_state.disable'), value=0)
+]
 TEMPULATURE_CHOICES = [
     app_commands.Choice(name=translator.t(f'tempurature_level.{level}'), value=round(i*0.2, 1))
         for i, level in enumerate([
@@ -118,7 +122,7 @@ class ConversationCog(Cog_Extension):
     toggle_group = app_commands.Group(name='toggle', description='Toggle something')
 
     @toggle_group.command(name='search')
-    @app_commands.choices(state=[app_commands.Choice(name='🔍enabled', value=1), app_commands.Choice(name='🚫disabled', value=0)])
+    @app_commands.choices(state=SEARCH_STATE_CHOICES)
     async def toggle_search(self, itn: discord.Interaction, state: int):
         """Toggle search functionality
 
