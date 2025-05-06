@@ -84,7 +84,7 @@ async def load_cogs():
                 log.error(f"An unexpected error occurred while loading cog {cog_name}: {e}", exc_info=True)
                 
     slash = await bot.tree.sync()
-    log.info(f'Synced {len(slash)} slash commands.')
+    log.info(f'Synced {len(slash)} slash command groups.')
 
 
 # --- Run Bot ---
