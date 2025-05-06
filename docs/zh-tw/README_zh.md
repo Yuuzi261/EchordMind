@@ -101,7 +101,7 @@ EchordMind 是一個利用 AI 在 Discord 上進行智慧、具上下文感知�
 
 機器人的行為可透過 `configs/` 目錄中的 YAML 文件進行自訂：
 
-- **`base_setting.yaml`**：通用設置，如語言 (`lang`)、時間戳提示和天氣提示。
+- **`base_setting.yaml`**：通用設置，如預設模型溫度、時間戳提示和天氣提示。
 - **`exception_message.yaml`**：各種場景的自訂錯誤訊息（例如 API 失敗）。
 - **`personality.yaml`**：透過 `system_prompt` 和摘要設置定義機器人個性。
 - **`role_settings.yaml`**：指定對話追蹤的角色（例如 `user`、`model`）。

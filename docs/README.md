@@ -97,7 +97,7 @@ Send a direct message to the bot to start a conversation. The bot will respond b
 
 The bot's behavior can be customized through YAML files in the `configs/` directory:
 
-- **`base_setting.yaml`**: General settings, such as language (`lang`), timestamp prompts, and weather prompts.
+- **`base_setting.yaml`**: General settings, such as default model temperature, timestamp prompts, and weather prompts.
 - **`exception_message.yaml`**: Custom error messages for various scenarios (e.g., API failures).
 - **`personality.yaml`**: Defines the bot's personality through `system_prompt` and summarization settings.
 - **`role_settings.yaml`**: Specifies roles for conversation tracking (e.g., `user`, `model`).
