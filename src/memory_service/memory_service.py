@@ -4,11 +4,13 @@ from typing import List, Dict, Optional, Tuple
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.vector_store import VectorStoreInterface
-from src.utils.core_utils import Translator
 
+from src.utils.core_utils import get_translator
 from src.utils.core_utils import insert_timestamp, create_system_message
 
 log = setup_logger(__name__)
+
+translator = get_translator()
 
 class MemoryService:
     def __init__(self, llm_service: LLMServiceInterface, vector_store: VectorStoreInterface, config: AppConfig):
@@ -23,8 +25,6 @@ class MemoryService:
         self.summarization_threshold = 16  # Trigger summarization when the conversation reaches 8 turns
         # Number of memories to retrieve for RAG
         self.rag_n_results = 3
-        
-        self.translator = Translator(config.lang)
 
         # load config settings
         self.summarization_prompt = config.summarization_prompt
@@ -60,7 +60,7 @@ class MemoryService:
             # Extract the part that needs summarizing (e.g., all dialogue except the most recent turns)
             # This simply summarizes the entire current deque and then replaces the old one.
             # A more optimized method would be to only summarize the oldest part.
-            history_to_summarize = insert_timestamp(user_memory, self.translator.t('prompt.timestamp_format'))
+            history_to_summarize = insert_timestamp(user_memory, translator.t('prompt.timestamp_format'))
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history_to_summarize])
 
             summary = await self.llm_service.summarize_conversation(history_text, self.summarization_prompt)
@@ -70,7 +70,7 @@ class MemoryService:
                 # 1. Store the summary in long-term memory (vector database)
                 summary_embedding = await self.llm_service.get_embedding(summary)
                 if summary_embedding:
-                    await self.vector_store.add_memory(user_id, self.translator.t('prompt.conversation_summary', summary=summary), summary_embedding)
+                    await self.vector_store.add_memory(user_id, translator.t('prompt.conversation_summary', summary=summary), summary_embedding)
                     log.debug(f"Summary stored in vector store for user {user_id}.")
 
                 # 2. Update short-term memory: Keep the summary and the most recent turns

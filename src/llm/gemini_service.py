@@ -1,8 +1,9 @@
+import os
 from google import genai
 from google.genai import types
 from google.genai.types import Tool, GoogleSearch
 from src import setup_logger
-from src.utils.core_utils import Translator
+from src.utils.core_utils import get_translator
 from src.utils.core_utils import insert_timestamp, create_system_message
 from src.utils.integrations import weather_period_reporter
 from src import AppConfig
@@ -10,6 +11,9 @@ from typing import List, Dict, Optional
 from .base import LLMServiceInterface
 
 log = setup_logger(__name__)
+
+LANG = os.getenv("LANG")
+translator = get_translator()
 
 class GeminiAssistant(LLMServiceInterface):
     DEFAULT_GENERATION_MODEL = "gemini-2.0-flash"
@@ -26,8 +30,6 @@ class GeminiAssistant(LLMServiceInterface):
         self.generation_model = self._validate_model(model_name, "generation", self.DEFAULT_GENERATION_MODEL)
         self.embedding_model = self._validate_model(embedding_model_name, "embedding", self.DEFAULT_EMBEDDING_MODEL)
         
-        self.lang = config.lang
-        self.translator = Translator(self.lang)
         self.enable_timestamp_prompt = config.enable_timestamp_prompt
         self.enable_weather_period_prompt = config.enable_weather_period_prompt
         
@@ -43,19 +45,19 @@ class GeminiAssistant(LLMServiceInterface):
             # construct the complete context
             full_history = [create_system_message(system_prompt)] # simulate system prompt
             if rag_context:
-                full_history.append(create_system_message(self.translator.t('prompt.long_term_memory', rag_context=rag_context))) # Inject RAG context as a system message
+                full_history.append(create_system_message(translator.t('prompt.long_term_memory', rag_context=rag_context))) # Inject RAG context as a system message
             
-            full_history.append(create_system_message(self.translator.t('prompt.history_separator')))
+            full_history.append(create_system_message(translator.t('prompt.history_separator')))
            
             if self.enable_timestamp_prompt:
-                timestamped_history = insert_timestamp(history, self.translator.t('prompt.timestamp_format'))    # Insert timestamp to the history record
+                timestamped_history = insert_timestamp(history, translator.t('prompt.timestamp_format'))    # Insert timestamp to the history record
                 full_history.extend(timestamped_history)                                                         # Insert the conversation history after the RAG context (if present)
             else:
                 full_history.extend(history)
             
             if self.enable_weather_period_prompt:
-                date, period, weather = await weather_period_reporter('Asia/Taipei', lang=self.lang, location='Taipei') # TODO: time zone and location should be configurable
-                full_history.append(create_system_message(self.translator.t('prompt.weather_period_info_format', date=date, period=period, weather=weather)))
+                date, period, weather = await weather_period_reporter('Asia/Taipei', lang=LANG, location='Taipei') # TODO: time zone and location should be configurable
+                full_history.append(create_system_message(translator.t('prompt.weather_period_info_format', date=date, period=period, weather=weather)))
 
             system_instruction = self._format_history(full_history)
             log.debug(f"system instruction: {system_instruction}")

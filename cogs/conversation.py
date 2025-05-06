@@ -8,14 +8,14 @@ from core import Cog_Extension
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
-from src.utils.core_utils import Translator
+from src.utils.core_utils import get_translator
 from src import split_markdown_message
 from src.llm.factory import get_llm_service
 from src.vector_store.factory import get_vector_store
 
 log = setup_logger(__name__)
 
-translator = Translator(lang='zh-tw')
+translator = get_translator()
 TEMPULATURE_CHOICES = [
     app_commands.Choice(name=translator.t(f'tempurature_level.{level}'), value=i*0.2)
         for i, level in enumerate([

@@ -2,6 +2,10 @@
 import yaml
 from pathlib import Path
 import os
+import threading
+
+_translator_instance = None
+_translator_lock = threading.Lock()
 
 class Translator:
     def __init__(self, lang: str, locales_dir: Path = None):
@@ -21,3 +25,18 @@ class Translator:
             return template.format(**kwargs)
         else:
             return template
+
+def get_translator(locales_dir: Path = None):
+    """
+    Get the unique Translator instance.
+    If the instance does not exist, create a new one.
+    Read the language setting from the environment variable LANG.
+    """
+    global _translator_instance
+    
+    with _translator_lock:
+        if _translator_instance is None:
+            lang = os.getenv("LANG", "en")
+            _translator_instance = Translator(lang=lang, locales_dir=locales_dir)
+            
+    return _translator_instance

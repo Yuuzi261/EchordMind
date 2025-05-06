@@ -23,7 +23,6 @@ class AppConfig:
         self._role_settings_config_path = role_settings_config_path
         
         # base setting default settings
-        self.lang: str = "en"
         self.enable_timestamp_prompt: bool = True
         self.enable_weather_period_prompt: bool = True
         self.model_default_temperature: float = 1.0
@@ -71,7 +70,6 @@ class AppConfig:
         """Loads all necessary configuration files."""
         # Load base config
         self.base_setting_data = self._load_yaml_config(self._base_setting_config_path, "Base setting")
-        self.lang = self.base_setting_data.get("lang", self.lang)
         self.enable_timestamp_prompt = self.base_setting_data.get("enable_timestamp_prompt", self.enable_timestamp_prompt)
         self.enable_weather_period_prompt = self.base_setting_data.get("enable_weather_period_prompt", self.enable_weather_period_prompt)
         self.model_default_temperature = self.base_setting_data.get("model_default_temperature", self.model_default_temperature)

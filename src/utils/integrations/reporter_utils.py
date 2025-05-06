@@ -2,14 +2,14 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import python_weather
 
-from src.utils.core_utils import Translator
+from src.utils.core_utils import get_translator
 from src import setup_logger
 
 log = setup_logger(__name__)
 
 async def weather_period_reporter(timezone, lang='en', location='New York'):
     # 1. time period summary
-    translator = Translator(lang)
+    translator = get_translator()
     now = datetime.now(ZoneInfo(timezone))
     h = now.hour
     period = (
