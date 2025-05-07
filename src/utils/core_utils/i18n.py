@@ -44,10 +44,10 @@ class Translator:
     def t(self, lang: str, key: str, **kwargs) -> str:
         # key is like "system.startup"
         lang_code = lang.lower()
-        lang_data = self.translations.get(lang_code, {})
+        lang_data = self.translations.get(lang_code)
         
         if not isinstance(lang_data, dict):
-            log.warning(f"Language data not found for {lang}. Using default English translations.")
+            log.debug(f"Language data not found for {lang}. Using default English translations.")
             lang_data = self.translations.get("en-us", {})
         
         parts = key.split(".")
