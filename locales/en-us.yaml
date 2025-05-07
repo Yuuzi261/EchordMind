@@ -1,10 +1,10 @@
-en:
+en-us:
   prompt:
-    long_term_memory: Long-term memory: {rag_context}
-    conversation_summary: Conversation Summary: {summary}
+    long_term_memory: 'Long-term memory: {rag_context}'
+    conversation_summary: 'Conversation Summary: {summary}'
     history_separator: 'The current history is as follows: '
-    timestamp_format: Current time: {timestamp}
-    weather_period_info_format: Current Date: {date}; Current Period: {period}; Weather Summary: {weather}
+    timestamp_format: 'Current time: {timestamp}'
+    weather_period_info_format: 'Current Date: {date}; Current Period: {period}; Weather Summary: {weather}'
     period:
       early: early morning
       morning: morning
@@ -16,13 +16,13 @@ en:
     enable: 🔍enable
     disable: 🚫disable
 
-  tempurature_level:
+  temperature_level:
     ultra_stable: 🧊Ultra Stable
-    very_stable: :snowflake:Very Stable
+    very_stable: ❄️Very Stable
     stable: 🪨Stable
-    moderate: :thermometer:Moderate
+    moderate: 🌡️Moderate
     slightly_flexible: 🌿Slightly Flexible
-    balanced: :scales:Balanced
+    balanced: ⚖️Balanced
     creative: 🎨Creative
     highly_creative: 🌈Highly Creative
     extremely_creative: 🚀Extremely Creative

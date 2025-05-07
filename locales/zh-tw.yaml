@@ -16,7 +16,7 @@ zh-tw:
     enable: 🔍啟用
     disable: 🚫停用
 
-  tempurature_level:
+  temperature_level:
     ultra_stable: 🧊極度穩定
     very_stable: ❄️非常穩定
     stable: 🪨穩定
