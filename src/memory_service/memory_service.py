@@ -5,7 +5,7 @@ from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.vector_store import VectorStoreInterface
 
-from src.utils.core_utils import get_translator
+from src.utils.i18n import get_translator
 from src.utils.core_utils import insert_timestamp, create_system_message
 
 log = setup_logger(__name__)

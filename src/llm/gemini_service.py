@@ -3,7 +3,7 @@ from google import genai
 from google.genai import types
 from google.genai.types import Tool, GoogleSearch
 from src import setup_logger
-from src.utils.core_utils import get_translator
+from src.utils.i18n import get_translator
 from src.utils.core_utils import insert_timestamp, create_system_message
 from src.utils.integrations import weather_period_reporter
 from src import AppConfig

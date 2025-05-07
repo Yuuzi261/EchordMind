@@ -2,7 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import python_weather
 
-from src.utils.core_utils import get_translator
+from src.utils.i18n import get_translator
 from src import setup_logger
 
 log = setup_logger(__name__)
