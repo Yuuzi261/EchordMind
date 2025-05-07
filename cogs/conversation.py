@@ -15,17 +15,6 @@ from src.vector_store.factory import get_vector_store
 
 log = setup_logger(__name__)
 
-translator = get_translator()
-SEARCH_STATE_CHOICES = [
-    app_commands.Choice(name=translator.t('search_state.enable'), value=1), 
-    app_commands.Choice(name=translator.t('search_state.disable'), value=0)
-]
-TEMPULATURE_CHOICES = [
-    app_commands.Choice(name=translator.t(f'tempurature_level.{level}'), value=round(i*0.2, 1))
-        for i, level in enumerate([
-            "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible", "balanced", 
-            "creative", "highly_creative", "extremely_creative", "beyond_imagination", "crazy_mode"
-])]
 
 class ConversationCog(Cog_Extension):
     def __init__(self, bot: commands.Bot, llm_service: LLMServiceInterface, memory_service: MemoryService, config: AppConfig):
@@ -122,7 +111,6 @@ class ConversationCog(Cog_Extension):
     toggle_group = app_commands.Group(name='toggle', description='Toggle something')
 
     @toggle_group.command(name='search')
-    @app_commands.choices(state=SEARCH_STATE_CHOICES)
     async def toggle_search(self, itn: discord.Interaction, state: int):
         """Toggle search functionality
 
@@ -135,7 +123,6 @@ class ConversationCog(Cog_Extension):
         await itn.response.send_message(f"Search functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
         
     @toggle_group.command(name='temperature')
-    @app_commands.choices(temperature=TEMPULATURE_CHOICES)
     @app_commands.rename(temperature="level")
     async def toggle_temperature(self, itn: discord.Interaction, temperature: float):
         """Toggle the creativity level of LLM's response
@@ -147,8 +134,48 @@ class ConversationCog(Cog_Extension):
         """
         self.temperature = temperature
         
-        choice_name = next((choice.name for choice in TEMPULATURE_CHOICES if choice.value == temperature), str(temperature))
-        await itn.response.send_message(f"Temperature level set to {choice_name}.", ephemeral=True)
+        # choice_name = next((choice.name for choice in TEMPULATURE_CHOICES if choice.value == temperature), str(temperature))
+        await itn.response.send_message(f"Temperature level set to {temperature}.", ephemeral=True)
+    
+    @toggle_search.autocomplete('state')
+    async def autocomplete_search_state(self, itn: discord.Interaction, current: str):
+        user_locale = str(itn.locale).lower()
+        log.debug(f"user_locale is {user_locale}")
+
+        current = str(current).lower()
+        current = '' if current == 'nan' else current
+
+        tr = get_translator()
+        localized_state = []
+        for i, state in enumerate(['enable', 'disable']):
+            state_name = tr.t(user_locale, f'search_state.{state}')
+            if current in state_name:
+                localized_state.append(app_commands.Choice(name=state_name, value=1-i))
+
+        return localized_state
+        
+    @toggle_temperature.autocomplete('temperature')
+    async def autocomplete_temperature_level(self, itn: discord.Interaction, current: str):
+        user_locale = str(itn.locale).lower()
+        log.debug(f"user_locale is {user_locale}")
+
+        temperature_levels = [
+            "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible",
+            "balanced", "creative", "highly_creative", "extremely_creative",
+            "beyond_imagination", "crazy_mode"
+        ]
+        
+        current = str(current).lower()
+        current = '' if current == 'nan' else current
+
+        tr = get_translator()
+        localized_level = []
+        for i, level in enumerate(temperature_levels):
+            level_name = tr.t(user_locale, f'temperature_level.{level}')
+            if current in level_name:
+                localized_level.append(app_commands.Choice(name=level_name, value=round(i*0.2, 1)))
+
+        return localized_level
 
 
 async def setup(bot: commands.Bot):

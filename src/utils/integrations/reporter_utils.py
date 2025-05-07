@@ -7,17 +7,17 @@ from src import setup_logger
 
 log = setup_logger(__name__)
 
-async def weather_period_reporter(timezone, lang='en', location='New York'):
+async def weather_period_reporter(timezone, lang='en-us', location='New York'):
     # 1. time period summary
-    translator = get_translator()
+    tr = get_translator()
     now = datetime.now(ZoneInfo(timezone))
     h = now.hour
     period = (
-        translator.t('prompt.period.early') if 5 <= h < 8 else
-        translator.t('prompt.period.morning') if 8 <= h < 12 else
-        translator.t('prompt.period.afternoon') if 12 <= h < 18 else
-        translator.t('prompt.period.evening') if 18 <= h < 20 else
-        translator.t('prompt.period.night')
+        tr.t(lang, 'prompt.period.early') if 5 <= h < 8 else
+        tr.t(lang, 'prompt.period.morning') if 8 <= h < 12 else
+        tr.t(lang, 'prompt.period.afternoon') if 12 <= h < 18 else
+        tr.t(lang, 'prompt.period.evening') if 18 <= h < 20 else
+        tr.t(lang, 'prompt.period.night')
     )
 
     # 2. weather summary
