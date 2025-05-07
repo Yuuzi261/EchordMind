@@ -1,3 +1,4 @@
+model_lang: en-us
 enable_timestamp_prompt: true
 enable_weather_period_prompt: true
 model_default_temperature: 1.0
