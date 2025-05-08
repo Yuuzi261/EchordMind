@@ -12,7 +12,7 @@ zh-tw:
       evening: 傍晚
       night: 深夜
 
-  search_state:
+  binary_state:
     enable: 🔍啟用
     disable: 🚫停用
 

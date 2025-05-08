@@ -164,7 +164,7 @@ class ConversationCog(Cog_Extension):
         tr = get_translator()
         localized_state = []
         for i, state in enumerate(['enable', 'disable']):
-            state_name = tr.t(user_locale, f'search_state.{state}')
+            state_name = tr.t(user_locale, f'binary_state.{state}')
             if current in state_name:
                 localized_state.append(app_commands.Choice(name=state_name, value=1-i))
 

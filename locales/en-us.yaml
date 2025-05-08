@@ -12,7 +12,7 @@ en-us:
       evening: evening
       night: midnight
 
-  search_state:
+  binary_state:
     enable: 🔍enable
     disable: 🚫disable
 
