@@ -1,6 +1,6 @@
-import os
+import asyncio
 from google import genai
-from google.genai import types
+from google.genai import types, errors
 from google.genai.types import Tool, GoogleSearch
 from src import setup_logger
 from src.utils.i18n import get_translator
@@ -71,22 +71,39 @@ class GeminiAssistant(LLMServiceInterface):
                 gemini_config.tools = [self.google_search_tool]
                 gemini_config.response_modalities = ["TEXT"]
 
-            # Call the Gemini API to generate response
-            response = await self.client.aio.models.generate_content(
-                model=self.generation_model,
-                config=gemini_config,
-                contents=user_input
-            )
+            max_retries = 3
+            retry_delay_seconds = 5
+            
+            for attempt in range(max_retries):
+                try:
+                    # Call the Gemini API to generate response
+                    response = await self.client.aio.models.generate_content(
+                        model=self.generation_model,
+                        config=gemini_config,
+                        contents=user_input
+                    )
 
-            # check if response is empty
-            if response.text:
-                return response.text
-            elif response.prompt_feedback:
-                log.warning(f"Gemini call blocked or failed. Feedback: {response.prompt_feedback}")
-                return self.content_moderation_error
-            else:
-                log.error(f"Gemini returned an empty response or unexpected format: {response}")
-                return self.unknown_response_error
+                    # check if response is empty
+                    if response.text:
+                        return response.text
+                    elif response.prompt_feedback:
+                        log.warning(f"Gemini call blocked or failed. Feedback: {response.prompt_feedback}")
+                        return self.content_moderation_error
+                    else:
+                        log.error(f"Gemini returned an empty response or unexpected format: {response}")
+                        return self.unknown_response_error
+                except errors.ServerError as e:
+                    # catch ServerError and retry if necessary
+                    log.warning(f"ServerError on attempt {attempt + 1}: {e}")
+                    if e.code == 503 and attempt < max_retries - 1:
+                        log.info(f"Retrying in {retry_delay_seconds} seconds...")
+                        await asyncio.sleep(retry_delay_seconds)
+                    elif e.code == 503 and attempt == max_retries - 1:
+                        log.error(f"Max retries reached for 503 ServerError: {e}", exc_info=True)
+                        return self.service_error
+                    else:
+                        log.error(f"Non-retryable ServerError on attempt {attempt + 1}: {e}", exc_info=True)
+                        return self.service_error
 
         except Exception as e:
             log.error(f"Error generating response from Gemini: {e}", exc_info=True)
