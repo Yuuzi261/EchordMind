@@ -9,6 +9,7 @@ from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
 from src.utils.i18n import get_translator
+from src.utils.core_utils import get_localized_choices
 from src import split_markdown_message
 from src.llm.factory import get_llm_service
 from src.vector_store.factory import get_vector_store
@@ -155,43 +156,19 @@ class ConversationCog(Cog_Extension):
     @toggle_search.autocomplete('state')
     @toggle_temporary_chat.autocomplete('state')
     async def autocomplete_toggle_state(self, itn: discord.Interaction, current: str):
-        user_locale = str(itn.locale).lower()
-        log.debug(f"user_locale is {user_locale}")
-
-        current = str(current).lower()
-        current = '' if current == 'nan' else current
-
-        tr = get_translator()
-        localized_state = []
-        for i, state in enumerate(['enable', 'disable']):
-            state_name = tr.t(user_locale, f'binary_state.{state}')
-            if current in state_name:
-                localized_state.append(app_commands.Choice(name=state_name, value=1-i))
-
-        return localized_state
+        states = ['enable', 'disable']
+        value_calc = lambda i, val: 1 - i
+        return get_localized_choices(itn, current, states, 'binary_state', value_calc)
         
     @toggle_temperature.autocomplete('temperature')
     async def autocomplete_temperature_level(self, itn: discord.Interaction, current: str):
-        user_locale = str(itn.locale).lower()
-        log.debug(f"user_locale is {user_locale}")
-
         temperature_levels = [
             "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible",
             "balanced", "creative", "highly_creative", "extremely_creative",
             "beyond_imagination", "crazy_mode"
         ]
-        
-        current = str(current).lower()
-        current = '' if current == 'nan' else current
-
-        tr = get_translator()
-        localized_level = []
-        for i, level in enumerate(temperature_levels):
-            level_name = tr.t(user_locale, f'temperature_level.{level}')
-            if current in level_name:
-                localized_level.append(app_commands.Choice(name=level_name, value=round(i*0.2, 1)))
-
-        return localized_level
+        value_calc = lambda i, val: round(i * 0.2, 1)
+        return get_localized_choices(itn, current, temperature_levels, 'temperature_level', value_calc)
 
 
 async def setup(bot: commands.Bot):
