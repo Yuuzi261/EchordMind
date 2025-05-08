@@ -8,13 +8,22 @@ from core import Cog_Extension
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
-from src.utils.i18n import get_translator
-from src.utils.core_utils import get_localized_choices
+from src.utils.core_utils import get_localized_choices, get_localized_name_from_value
 from src import split_markdown_message
 from src.llm.factory import get_llm_service
 from src.vector_store.factory import get_vector_store
 
 log = setup_logger(__name__)
+
+BINARY_STATES = ['enable', 'disable']
+TEMPERATURE_LEVELS = [
+    "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible",
+    "balanced", "creative", "highly_creative", "extremely_creative",
+    "beyond_imagination", "crazy_mode"
+]
+
+BINARY_STATES_CALCULATOR = lambda i, val: 1 - i                     # enable --> 1, disable --> 0
+TEMPERATURE_LEVELS_CALCULATOR = lambda i, val: round(i * 0.2, 1)    # 0.2 is the step size
 
 
 class ConversationCog(Cog_Extension):
@@ -122,7 +131,9 @@ class ConversationCog(Cog_Extension):
             Whether to enable or disable search functionality.
         """
         self.use_search = bool(state)
-        await itn.response.send_message(f"Search functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
+        
+        choice_name = get_localized_name_from_value(itn, state, BINARY_STATES, 'binary_state', BINARY_STATES_CALCULATOR)
+        await itn.response.send_message(f"Search functionality {choice_name}.", ephemeral=True)
         
     temporary_subgroup = app_commands.Group(name="temporary", description="Subgroup of toggle group", parent=toggle_group)
     
@@ -136,7 +147,9 @@ class ConversationCog(Cog_Extension):
             Whether to enable or disable temporary chat functionality.
         """
         self.memory_service.temporary_chat_mode(str(itn.user.id), bool(state))
-        await itn.response.send_message(f"Temporary chat functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
+        
+        choice_name = get_localized_name_from_value(itn, state, BINARY_STATES, 'binary_state', BINARY_STATES_CALCULATOR)
+        await itn.response.send_message(f"Temporary chat functionality {choice_name}.", ephemeral=True)
         
     @toggle_group.command(name='temperature')
     @app_commands.rename(temperature="level")
@@ -150,25 +163,18 @@ class ConversationCog(Cog_Extension):
         """
         self.temperature = temperature
         
-        # choice_name = next((choice.name for choice in TEMPULATURE_CHOICES if choice.value == temperature), str(temperature))
-        await itn.response.send_message(f"Temperature level set to {temperature}.", ephemeral=True)
+        choice_name = get_localized_name_from_value(itn, temperature, TEMPERATURE_LEVELS, 'temperature_level', TEMPERATURE_LEVELS_CALCULATOR)
+        await itn.response.send_message(f"Temperature level set to {choice_name}.", ephemeral=True)
     
     @toggle_search.autocomplete('state')
     @toggle_temporary_chat.autocomplete('state')
     async def autocomplete_toggle_state(self, itn: discord.Interaction, current: str):
-        states = ['enable', 'disable']
-        value_calc = lambda i, val: 1 - i
-        return get_localized_choices(itn, current, states, 'binary_state', value_calc)
+        return get_localized_choices(itn, current, BINARY_STATES, 'binary_state', BINARY_STATES_CALCULATOR)
         
     @toggle_temperature.autocomplete('temperature')
     async def autocomplete_temperature_level(self, itn: discord.Interaction, current: str):
-        temperature_levels = [
-            "ultra_stable", "very_stable", "stable", "moderate", "slightly_flexible",
-            "balanced", "creative", "highly_creative", "extremely_creative",
-            "beyond_imagination", "crazy_mode"
-        ]
-        value_calc = lambda i, val: round(i * 0.2, 1)
-        return get_localized_choices(itn, current, temperature_levels, 'temperature_level', value_calc)
+        value_calc = lambda i, val: round(i * 0.2, 1)       # 0.2 is the step size
+        return get_localized_choices(itn, current, TEMPERATURE_LEVELS, 'temperature_level', TEMPERATURE_LEVELS_CALCULATOR)
 
 
 async def setup(bot: commands.Bot):

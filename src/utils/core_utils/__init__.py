@@ -1,3 +1,3 @@
-from .discord_utils import get_localized_choices
+from .discord_utils import get_localized_choices, get_localized_name_from_value
 from .memory_utils import insert_timestamp, create_system_message
 from .time_utils import timestamp_formatter
