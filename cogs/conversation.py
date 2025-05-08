@@ -32,6 +32,7 @@ class ConversationCog(Cog_Extension):
         self.model_role = config.model_role
         
         # dynamic settings
+        # TODO: In the future, these values ​​should be made into dictionaries to support multi-user scenarios
         self.temperature = config.model_default_temperature
         self.use_search = False
         
@@ -122,6 +123,20 @@ class ConversationCog(Cog_Extension):
         self.use_search = bool(state)
         await itn.response.send_message(f"Search functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
         
+    temporary_subgroup = app_commands.Group(name="temporary", description="Subgroup of toggle group", parent=toggle_group)
+    
+    @temporary_subgroup.command(name='chat')
+    async def toggle_temporary_chat(self, itn: discord.Interaction, state: int):
+        """Toggle temporary chat functionality
+
+        Parameters
+        -----------
+        state: int
+            Whether to enable or disable temporary chat functionality.
+        """
+        self.memory_service.temporary_chat_mode(str(itn.user.id), bool(state))
+        await itn.response.send_message(f"Temporary chat functionality {'enabled' if state else 'disabled'}.", ephemeral=True)
+        
     @toggle_group.command(name='temperature')
     @app_commands.rename(temperature="level")
     async def toggle_temperature(self, itn: discord.Interaction, temperature: float):
@@ -138,7 +153,8 @@ class ConversationCog(Cog_Extension):
         await itn.response.send_message(f"Temperature level set to {temperature}.", ephemeral=True)
     
     @toggle_search.autocomplete('state')
-    async def autocomplete_search_state(self, itn: discord.Interaction, current: str):
+    @toggle_temporary_chat.autocomplete('state')
+    async def autocomplete_toggle_state(self, itn: discord.Interaction, current: str):
         user_locale = str(itn.locale).lower()
         log.debug(f"user_locale is {user_locale}")
 

@@ -16,6 +16,7 @@ class MemoryService:
         self.vector_store = vector_store
         # Use a dictionary to store short-term memory for each user {user_id: deque}
         self.short_term_memory: Dict[str, deque] = {}
+        self.temporary_chat_memory: Dict[str, deque] = {}   # for temporary chat mode
         # Set the maximum length of short-term memory (number of conversation turns)
         # TODO The triggering mechanism needs further adjustment.
         self.max_history_length = 20  # For example, keep the last 10 conversation turns (user+bot)
@@ -30,21 +31,29 @@ class MemoryService:
         
         self.lang = config.model_lang
         self.tr = get_translator()
+        
+        # dynamic settings
+        self.use_temporary_chat: Dict[str, bool] = {}
 
 
     def _get_user_memory(self, user_id: str) -> deque:
         """get or create the specified user's short-term memory deque"""
-        if user_id not in self.short_term_memory:
-            self.short_term_memory[user_id] = deque(maxlen=self.max_history_length)
-            log.info(f"Initialized short-term memory for user {user_id}.")
-        return self.short_term_memory[user_id]
+        is_temporary_chat = self.use_temporary_chat.get(user_id, False)
+        user_memory = self.temporary_chat_memory if is_temporary_chat else self.short_term_memory
+
+        if user_id not in user_memory:
+            user_memory[user_id] = deque(maxlen=self.max_history_length)
+            kind = "short-term" if not is_temporary_chat else "temporary"
+            log.info(f"Initialized {kind} memory for user {user_id}.")
+        return user_memory[user_id]
 
     async def add_message(self, user_id: str, role: str, content: str, timestamp: str = None):
         """add a message to the short-term memory and trigger summarization check"""
         user_memory = self._get_user_memory(user_id)
         user_memory.append({"role": role, "content": content, "timestamp": timestamp})
         log.debug(f"Added message to short-term memory for user {user_id}. New length: {len(user_memory)}")
-        await self.check_and_summarize(user_id) # Check if summarization is needed after adding the message
+        if not self.use_temporary_chat.get(user_id, False):
+            await self.check_and_summarize(user_id) # Check if summarization is needed after adding the message
 
     def get_history(self, user_id: str) -> List[Dict[str, str]]:
         """get the current short-term history record of the user"""
@@ -118,3 +127,16 @@ class MemoryService:
         else:
             # log.info(f"No relevant memories found for user {user_id}.")
             return None
+        
+    def temporary_chat_mode(self, user_id: str, state: bool):
+        """set the temporary chat mode state for a specific user and clear temporary history if exiting"""
+        log.info(f"Setting temporary chat mode for user {user_id} to {state}")
+        self.use_temporary_chat[user_id] = state # Update the user's state
+        
+        if not state:
+            if user_id in self.temporary_chat_memory:
+                del self.temporary_chat_memory[user_id] # Clear the temporary chat memory
+                log.info(f"Cleared temporary chat memory for user {user_id}")
+            else:
+                log.debug(f"User {user_id} exited temporary mode, but no temporary history was found to clear.")
+    
