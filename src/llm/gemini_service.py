@@ -42,12 +42,14 @@ class GeminiAssistant(LLMServiceInterface):
 
     async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None, temperature: float = 1.0, use_search: bool = False) -> Optional[str]:
         try:
-            # construct the complete context
-            full_history = [create_system_message(system_prompt)] # simulate system prompt
+            # Construct the complete context
+            full_history = [create_system_message(system_prompt)]
             if rag_context:
-                full_history.append(create_system_message(self.tr.t(self.lang, 'prompt.long_term_memory', rag_context=rag_context))) # Inject RAG context as a system message
+                rag_msg = self.tr.t(self.lang, 'prompt.long_term_memory', rag_context=rag_context)
+                full_history.append(create_system_message(rag_msg)) # Inject RAG context as a system message
             
-            full_history.append(create_system_message(self.tr.t(self.lang, 'prompt.history_separator')))
+            sep = self.tr.t(self.lang, 'prompt.history_separator')
+            full_history.append(create_system_message(sep))
            
             if self.enable_timestamp_prompt:
                 timestamped_history = insert_timestamp(history, self.tr.t(self.lang, 'prompt.timestamp_format'))    # Insert timestamp to the history record
@@ -122,11 +124,11 @@ class GeminiAssistant(LLMServiceInterface):
                 ),
                 contents=conversation_history
             )
-            if response:
+            if response.text:
                 log.info("Summarization successful.")
                 log.info(f"Summarization result: {response.text}...")
                 return response.text
-            elif response.prompt_feedback: # TODO: check if prompt feedback exists
+            elif response.prompt_feedback:
                 log.warning(f"Gemini summarization blocked. Feedback: {response.prompt_feedback}")
                 return None # or return an error message
             else:
