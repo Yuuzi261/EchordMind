@@ -179,13 +179,6 @@ class ConversationCog(Cog_Extension):
 
 async def setup(bot: commands.Bot):
     """Cog's entry point, used for loading the Cog"""
-    # TODO multiple LLM service support
-    api_key_gemini = os.getenv("GEMINI_API_KEY")
-    api_key_grok = os.getenv("GROK_API_KEY")
-    if not api_key_gemini:
-        log.error("GEMINI_API_KEY not found in environment variables!")
-        raise ValueError("GEMINI_API_KEY is required.")
-    ###################################
 
     config = AppConfig()
 
@@ -194,8 +187,8 @@ async def setup(bot: commands.Bot):
     try:
         use_llm_service = config.default_llm_service
         use_embedding_service = config.default_embedding_service
-        llm_service = get_llm_service(service_name=use_llm_service, api_key=api_key_grok, model_name=config.default_model[use_llm_service], config=config)
-        embedding_service = get_embedding_service(service_name=use_embedding_service, api_key=api_key_gemini, embedding_model_name=config.default_embedding_model[use_embedding_service])
+        llm_service = get_llm_service(service_name=use_llm_service, model_name=config.default_model[use_llm_service], config=config)
+        embedding_service = get_embedding_service(service_name=use_embedding_service, embedding_model_name=config.default_embedding_model[use_embedding_service])
         vector_store = get_vector_store(vector_store_name="chroma", path=vector_db_path)
         memory_service = MemoryService(llm_service, embedding_service, vector_store, config)
         await bot.add_cog(ConversationCog(bot, llm_service, memory_service, config))
