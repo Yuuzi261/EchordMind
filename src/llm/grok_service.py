@@ -1,0 +1,218 @@
+import asyncio
+from openai import OpenAI, OpenAIError
+from src import setup_logger
+from src.utils.i18n import get_translator
+from src.utils.core_utils import insert_timestamp, create_system_message
+from src.utils.integrations import weather_period_reporter
+from src import AppConfig
+from typing import List, Dict, Optional
+from .base import LLMServiceInterface
+
+log = setup_logger(__name__)
+
+class GrokAssistant(LLMServiceInterface):
+    DEFAULT_GENERATION_MODEL = "grok-3-mini-fast-beta"
+    DEFAULT_EMBEDDING_MODEL = "text-embedding-ada-002"
+
+    def __init__(
+        self,
+        api_key: str,
+        model_name: str,
+        embedding_model_name: str,
+        config: AppConfig
+    ):
+        try:
+            self.client = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+            log.info("xAI Grok configured successfully.")
+        except Exception as e:
+            log.error(f"Failed to configure xAI Grok: {e}")
+            raise
+
+        self.generation_model = self._validate_model(model_name, "generation", self.DEFAULT_GENERATION_MODEL)
+        # now not support embedding
+        # self.embedding_model = self._validate_model(
+        #     embedding_model_name, "embedding", self.DEFAULT_EMBEDDING_MODEL
+        # )
+
+        self.lang = config.model_lang
+        self.enable_timestamp_prompt = config.enable_timestamp_prompt
+        self.enable_weather_period_prompt = config.enable_weather_period_prompt
+        
+        # load role settings for history formatting
+        self.user_role = config.user_role
+        self.model_role = config.model_role
+
+        self.content_moderation_error = config.content_moderation_error
+        self.unknown_response_error = config.unknown_response_error
+        self.service_error = config.service_error
+
+        self.tr = get_translator()
+
+    async def generate_response(
+        self,
+        system_prompt: str,
+        history: List[Dict[str, str]],
+        user_input: str,
+        rag_context: Optional[str] = None,
+        temperature: float = 1.0,
+        use_search: bool = False
+    ) -> Optional[str]:
+        try:
+            # Construct the complete context
+            full_history = [create_system_message(system_prompt)]
+            if rag_context:
+                rag_msg = self.tr.t(self.lang, 'prompt.long_term_memory', rag_context=rag_context)
+                full_history.append(create_system_message(rag_msg)) # Inject RAG context as a system message
+
+            sep = self.tr.t(self.lang, 'prompt.history_separator')
+            full_history.append(create_system_message(sep))
+
+            if self.enable_timestamp_prompt:
+                timestamped_history = insert_timestamp(history, self.tr.t(self.lang, 'prompt.timestamp_format'))    # Insert timestamp to the history record
+                full_history.extend(timestamped_history)
+            else:
+                full_history.extend(history)
+
+            if self.enable_weather_period_prompt:
+                date, period, weather = await weather_period_reporter('Asia/Taipei', lang=self.lang, location='Taipei') # TODO: time zone and location should be configurable
+                full_history.append(create_system_message(self.tr.t(self.lang, 'prompt.weather_period_info_format', date=date, period=period, weather=weather)))
+
+            log.debug(f"full_history: {full_history}")
+            
+            messages = self._format_history(full_history)
+            messages.append({"role": "user", "content": user_input})
+            
+            if use_search:
+                # TODO: implement search functionality
+                pass
+
+            max_retries = 3
+            retry_delay_seconds = 5
+            loop = asyncio.get_running_loop()
+
+            for attempt in range(max_retries):
+                try:
+                    # Run synchronous API call in thread executor to avoid blocking
+                    response = await loop.run_in_executor(
+                        None,
+                        lambda: self.client.chat.completions.create(
+                            model=self.generation_model,
+                            messages=messages,
+                            temperature=temperature
+                        )
+                    )
+                    text = response.choices[0].message.content
+                    refusal = response.choices[0].message.refusal
+                    if text:
+                        return text
+                    elif refusal:
+                        log.warning(f"Grok call blocked or failed. Feedback: {refusal}")
+                        return self.content_moderation_error
+                    else:
+                        log.error(f"Grok returned an empty response or unexpected format: {response}")
+                        return self.unknown_response_error
+                except OpenAIError as e:
+                    # catch OpenAIError and retry if necessary
+                    log.warning(f"API error on attempt {attempt+1}: {e}")
+                    if e.code == 503 and attempt < max_retries - 1:
+                        log.info(f"Retrying in {retry_delay_seconds} seconds...")
+                        await asyncio.sleep(retry_delay_seconds)
+                    elif e.code == 503 and attempt == max_retries - 1:
+                        log.error(f"Max retries reached for 503 ServerError: {e}", exc_info=True)
+                        return self.service_error
+                    else:
+                        log.error(f"Non-retryable ServerError on attempt {attempt + 1}: {e}", exc_info=True)
+                        return self.service_error
+
+        except Exception as e:
+            log.error(f"Error generating response from Grok: {e}", exc_info=True)
+            # TODO consider more fine-grained error handling, e.g., API rate limit
+            return self.service_error
+
+    async def summarize_conversation(
+        self,
+        conversation_history: str,
+        summarization_prompt: str
+    ) -> Optional[str]:
+        """use the LLM to summarize the conversation content"""
+        try:
+            loop = asyncio.get_running_loop()
+            # Wrap in executor
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.chat.completions.create(
+                    model=self.generation_model,
+                    messages=[
+                        {"role": "system", "content": summarization_prompt},
+                        {"role": "user", "content": conversation_history}
+                    ],
+                    temperature=0.1
+                )
+            )
+            summary = response.choices[0].message.content
+            refusal = response.choices[0].message.refusal
+            if summary:
+                log.info("Summarization successful.")
+                log.info(f"Summarization result: {summary}...")
+                return summary
+            elif refusal:
+                log.warning(f"Grok summarization blocked. Feedback: {refusal}")
+                return None # or return an error message
+            else:
+                log.error(f"Grok summarization returned empty response: {response}")
+                return None
+        except OpenAIError as e:
+            log.error(f"Error summarizing conversation with Grok: {e}", exc_info=True)
+            return None
+
+    async def get_embedding(self, text: str) -> Optional[List[float]]:
+        # now not support embedding
+        return None
+        # try:
+        #     loop = asyncio.get_running_loop()
+        #     result = await loop.run_in_executor(
+        #         None,
+        #         lambda: self.client.embeddings.create(
+        #             model=self.embedding_model,
+        #             input=[text]
+        #         )
+        #     )
+        #     return result.data[0].embedding
+        # except OpenAIError as e:
+        #     log.error(f"Error getting embedding from Grok: {e}", exc_info=True)
+        #     return None
+
+    def _validate_model(
+        self,
+        model_name: str,
+        model_type: str,
+        default_model: str
+    ) -> str:
+        try:
+            available_model_ids = [model.id for model in self.client.models.list()]
+            
+            if model_name in available_model_ids:
+                log.info(f"{model_type.capitalize()} model '{model_name}' validated successfully.")
+                return model_name
+            else:
+                log.warning(
+                    f"{model_type.capitalize()} model '{model_name}' unavailable, using default '{default_model}'."
+                )
+                return default_model
+            
+        except Exception:
+            log.warning(
+                f"{model_type.capitalize()} model '{model_name}' unavailable, using default '{default_model}'."
+            )
+            return default_model
+        
+    def _format_history(self, history: List[Dict[str, str]]) -> List[Dict[str, any]]:
+        """transform internal history record to the format accepted by the Grok API"""
+        formatted = []
+        for item in history:
+            if item['role'] == 'system':
+                formatted.append(item)
+            else:
+                role = 'user' if item['role'] == self.user_role else 'assistant'
+                formatted.append({'role': role, 'content': item['content']})
+        return formatted

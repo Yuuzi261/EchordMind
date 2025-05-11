@@ -179,7 +179,9 @@ class ConversationCog(Cog_Extension):
 
 async def setup(bot: commands.Bot):
     """Cog's entry point, used for loading the Cog"""
+    # TODO multiple LLM service support
     api_key = os.getenv("GEMINI_API_KEY")
+    # api_key = os.getenv("GROK_API_KEY")
     if not api_key:
         log.error("GEMINI_API_KEY not found in environment variables!")
         raise ValueError("GEMINI_API_KEY is required.")
@@ -189,7 +191,8 @@ async def setup(bot: commands.Bot):
     vector_db_path = "data/"                    # set the path to the ChromaDB persistence path
 
     try:
-        llm_service = get_llm_service(llm_name="gemini", api_key=api_key, model_name="gemini-2.5-flash-preview-04-17", embedding_model_name="gemini-embedding-exp-03-07", config=config)
+        use_llm_service = config.default_llm_service
+        llm_service = get_llm_service(llm_name=use_llm_service, api_key=api_key, model_name=config.default_model[use_llm_service], embedding_model_name="gemini-embedding-exp-03-07", config=config)
         vector_store = get_vector_store(vector_store_name="chroma", path=vector_db_path)
         memory_service = MemoryService(llm_service, vector_store, config)
         await bot.add_cog(ConversationCog(bot, llm_service, memory_service, config))

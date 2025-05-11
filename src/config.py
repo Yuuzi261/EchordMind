@@ -23,9 +23,14 @@ class AppConfig:
         
         # base setting default settings
         self.model_lang: str = "en-us"
+        self.model_default_temperature: float = 1.0
+        self.default_llm_service: str = "gemini"
+        self.default_model: dict = {
+            "gemini": "gemini-2.0-flash",
+            "grok": "grok-3-mini-fast-beta"
+        }
         self.enable_timestamp_prompt: bool = True
         self.enable_weather_period_prompt: bool = True
-        self.model_default_temperature: float = 1.0
 
         # personality default settings
         self.system_prompt: str = "You are a friendly AI assistant."
@@ -71,9 +76,11 @@ class AppConfig:
         # Load base config
         self.base_setting_data = self._load_yaml_config(self._base_setting_config_path, "Base setting")
         self.model_lang = self.base_setting_data.get("model_lang", self.model_lang)
+        self.model_default_temperature = self.base_setting_data.get("model_default_temperature", self.model_default_temperature)
+        self.default_llm_service = self.base_setting_data.get("default_llm_service", self.default_llm_service)
+        self.default_model = self.base_setting_data.get("default_model", self.default_model)
         self.enable_timestamp_prompt = self.base_setting_data.get("enable_timestamp_prompt", self.enable_timestamp_prompt)
         self.enable_weather_period_prompt = self.base_setting_data.get("enable_weather_period_prompt", self.enable_weather_period_prompt)
-        self.model_default_temperature = self.base_setting_data.get("model_default_temperature", self.model_default_temperature)
         
         # Load personality config
         personality_data = self._load_yaml_config(self._personality_config_path, "Personality")

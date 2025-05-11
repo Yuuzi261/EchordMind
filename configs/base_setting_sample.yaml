@@ -1,4 +1,10 @@
 model_lang: en-us
+
+model_default_temperature: 1.0
+default_llm_service: gemini
+default_model:
+  gemini: gemini-2.0-flash
+  grok: grok-3-mini-fast-beta
+
 enable_timestamp_prompt: true
 enable_weather_period_prompt: true
-model_default_temperature: 1.0
