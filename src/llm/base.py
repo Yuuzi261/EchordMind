@@ -1,12 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional
-
-class LLMService(ABC):
-    @abstractmethod
-    async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], user_input: str, rag_context: Optional[str] = None) -> Optional[str]:
-        pass
-    
-from abc import ABC, abstractmethod
 from typing import List, Dict, Optional, Any
 
 class LLMServiceInterface(ABC):

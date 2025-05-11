@@ -1,8 +1,8 @@
 from .gemini_service import GeminiAssistant
 from .grok_service import GrokAssistant
-from .base import LLMService
+from .base import LLMServiceInterface
 
-def get_llm_service(llm_name: str, **kwargs) -> LLMService:
+def get_llm_service(llm_name: str, **kwargs) -> LLMServiceInterface:
     api_key = kwargs["api_key"]
     model_name = kwargs["model_name"]
     embedding_model_name = kwargs["embedding_model_name"]
