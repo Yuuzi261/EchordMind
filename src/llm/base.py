@@ -48,19 +48,6 @@ class LLMServiceInterface(ABC):
         pass
     
     @abstractmethod
-    async def get_embedding(self, text: str) -> Optional[List[float]]:
-        """
-        Get the embedding vector of the text.
-        
-        Args:
-            text: The text to be converted to an embedding vector.
-            
-        Returns:
-            The embedding vector (list of floats), or None if failed.
-        """
-        pass
-    
-    @abstractmethod
     def _validate_model(self, model_name: str, model_type: str, default_model: str) -> str:
         """
         Checks if the specified model is available and returns the default model if not.

@@ -29,6 +29,10 @@ class AppConfig:
             "gemini": "gemini-2.0-flash",
             "grok": "grok-3-mini-fast-beta"
         }
+        self.default_embedding_service: str = "gemini"
+        self.default_embedding_model: dict = {
+            "gemini": "embedding-001"
+        }
         self.enable_timestamp_prompt: bool = True
         self.enable_weather_period_prompt: bool = True
 
@@ -79,6 +83,8 @@ class AppConfig:
         self.model_default_temperature = self.base_setting_data.get("model_default_temperature", self.model_default_temperature)
         self.default_llm_service = self.base_setting_data.get("default_llm_service", self.default_llm_service)
         self.default_model = self.base_setting_data.get("default_model", self.default_model)
+        self.default_embedding_service = self.base_setting_data.get("default_embedding_service", self.default_embedding_service)
+        self.default_embedding_model = self.base_setting_data.get("default_embedding_model", self.default_embedding_model)
         self.enable_timestamp_prompt = self.base_setting_data.get("enable_timestamp_prompt", self.enable_timestamp_prompt)
         self.enable_weather_period_prompt = self.base_setting_data.get("enable_weather_period_prompt", self.enable_weather_period_prompt)
         

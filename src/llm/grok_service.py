@@ -12,13 +12,11 @@ log = setup_logger(__name__)
 
 class GrokAssistant(LLMServiceInterface):
     DEFAULT_GENERATION_MODEL = "grok-3-mini-fast-beta"
-    DEFAULT_EMBEDDING_MODEL = "text-embedding-ada-002"
 
     def __init__(
         self,
         api_key: str,
         model_name: str,
-        embedding_model_name: str,
         config: AppConfig
     ):
         try:
@@ -29,10 +27,6 @@ class GrokAssistant(LLMServiceInterface):
             raise
 
         self.generation_model = self._validate_model(model_name, "generation", self.DEFAULT_GENERATION_MODEL)
-        # now not support embedding
-        # self.embedding_model = self._validate_model(
-        #     embedding_model_name, "embedding", self.DEFAULT_EMBEDDING_MODEL
-        # )
 
         self.lang = config.model_lang
         self.enable_timestamp_prompt = config.enable_timestamp_prompt
@@ -164,23 +158,6 @@ class GrokAssistant(LLMServiceInterface):
         except OpenAIError as e:
             log.error(f"Error summarizing conversation with Grok: {e}", exc_info=True)
             return None
-
-    async def get_embedding(self, text: str) -> Optional[List[float]]:
-        # now not support embedding
-        return None
-        # try:
-        #     loop = asyncio.get_running_loop()
-        #     result = await loop.run_in_executor(
-        #         None,
-        #         lambda: self.client.embeddings.create(
-        #             model=self.embedding_model,
-        #             input=[text]
-        #         )
-        #     )
-        #     return result.data[0].embedding
-        # except OpenAIError as e:
-        #     log.error(f"Error getting embedding from Grok: {e}", exc_info=True)
-        #     return None
 
     def _validate_model(
         self,

@@ -5,6 +5,9 @@ default_llm_service: gemini
 default_model:
   gemini: gemini-2.0-flash
   grok: grok-3-mini-fast-beta
+default_embedding_service: gemini
+default_embedding_model:
+  gemini: embedding-001
 
 enable_timestamp_prompt: true
 enable_weather_period_prompt: true

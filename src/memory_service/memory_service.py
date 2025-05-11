@@ -3,6 +3,7 @@ from collections import deque
 from typing import List, Dict, Optional, Tuple
 from src import AppConfig
 from src.llm import LLMServiceInterface
+from src.embedding import EmbeddingServiceInterface
 from src.vector_store import VectorStoreInterface
 
 from src.utils.i18n import get_translator
@@ -11,8 +12,9 @@ from src.utils.core_utils import insert_timestamp, create_system_message
 log = setup_logger(__name__)
 
 class MemoryService:
-    def __init__(self, llm_service: LLMServiceInterface, vector_store: VectorStoreInterface, config: AppConfig):
+    def __init__(self, llm_service: LLMServiceInterface, embedding_service: EmbeddingServiceInterface, vector_store: VectorStoreInterface, config: AppConfig):
         self.llm_service = llm_service
+        self.embedding_service = embedding_service
         self.vector_store = vector_store
         # Use a dictionary to store short-term memory for each user {user_id: deque}
         self.short_term_memory: Dict[str, deque] = {}
@@ -78,7 +80,7 @@ class MemoryService:
             if summary:
                 log.info(f"Generated summary for user {user_id}: {summary[:100]}...")
                 # 1. Store the summary in long-term memory (vector database)
-                summary_embedding = await self.llm_service.get_embedding(summary)
+                summary_embedding = await self.embedding_service.get_embedding(summary)
                 if summary_embedding:
                     await self.vector_store.add_memory(user_id, self.tr.t(self.lang, 'prompt.conversation_summary', summary=summary), summary_embedding)
                     log.debug(f"Summary stored in vector store for user {user_id}.")
@@ -110,7 +112,7 @@ class MemoryService:
     async def retrieve_relevant_memories(self, user_id: str, query: str) -> Optional[str]:
         """retrieve and format the relevant memories based on the current query"""
         log.debug(f"Retrieving relevant memories for user {user_id} based on query: {query[:50]}...")
-        query_embedding = await self.llm_service.get_embedding(query)
+        query_embedding = await self.embedding_service.get_embedding(query)
         if not query_embedding:
             log.warning(f"Could not get embedding for query for user {user_id}.")
             return None

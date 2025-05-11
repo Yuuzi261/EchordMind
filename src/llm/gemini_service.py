@@ -14,9 +14,8 @@ log = setup_logger(__name__)
 
 class GeminiAssistant(LLMServiceInterface):
     DEFAULT_GENERATION_MODEL = "gemini-2.0-flash"
-    DEFAULT_EMBEDDING_MODEL = "embedding-001"
     
-    def __init__(self, api_key: str, model_name: str, embedding_model_name: str, config: AppConfig):
+    def __init__(self, api_key: str, model_name: str, config: AppConfig):
         try:
             self.client = genai.Client(api_key=api_key)
             log.info("Google Generative AI configured successfully.")
@@ -25,7 +24,6 @@ class GeminiAssistant(LLMServiceInterface):
             raise
         
         self.generation_model = self._validate_model(model_name, "generation", self.DEFAULT_GENERATION_MODEL)
-        self.embedding_model = self._validate_model(embedding_model_name, "embedding", self.DEFAULT_EMBEDDING_MODEL)
         
         self.lang = config.model_lang
         self.enable_timestamp_prompt = config.enable_timestamp_prompt
@@ -136,22 +134,6 @@ class GeminiAssistant(LLMServiceInterface):
                 return None
         except Exception as e:
             log.error(f"Error summarizing conversation with Gemini: {e}", exc_info=True)
-            return None
-
-    async def get_embedding(self, text: str) -> Optional[List[float]]:
-        """get the embedding vector of the text"""
-        try:
-            result = await self.client.aio.models.embed_content(
-                model=self.embedding_model,
-                contents=[text],
-                config={
-                    'output_dimensionality': 64 #TODO: set the embedding dimension (config option & find a better value)
-                }
-            )
-            log.debug(f"Embedding result: {result.embeddings[0].values}")
-            return result.embeddings[0].values
-        except Exception as e:
-            log.error(f"Error getting embedding from Gemini: {e}", exc_info=True)
             return None
         
     def _validate_model(self, model_name: str, model_type: str, default_model: str) -> str:
