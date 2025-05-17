@@ -182,7 +182,7 @@ async def setup(bot: commands.Bot):
 
     config = AppConfig()
 
-    vector_db_path = "data/"                    # set the path to the ChromaDB persistence path
+    vector_db_path = os.getenv("VECTOR_DB_PATH") or "data/"                    # set the path to the ChromaDB persistence path
 
     try:
         use_llm_service = config.default_llm_service
