@@ -57,8 +57,11 @@ Switch Language: [English](https://github.com/Yuuzi261/EchordMind/blob/main/docs
     ```env
     USER_ID=your_discord_user_id
     LOG_LEVEL=INFO
+    LANG=en-us              # now support en-us, zh-tw
+    VECTOR_DB_PATH=data/
     DISCORD_BOT_TOKEN=your_discord_bot_token
     GEMINI_API_KEY=your_gemini_api_key
+    GROK_API_KEY=your_grok_api_key
     ```
     > **Note**: `USER_ID` is currently used to send a test message when the bot starts. This is a temporary feature and may be removed in future versions. ~~Admittedly, this method is quite useful, at least for personal use...~~
 

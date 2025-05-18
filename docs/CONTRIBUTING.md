@@ -63,8 +63,11 @@ To contribute code, you’ll need to set up the project locally. Follow these st
    ```env
    USER_ID=your_discord_user_id
    LOG_LEVEL=DEBUG                          # For more debugging info
+   LANG=en-us                               # now support en-us, zh-tw
+   VECTOR_DB_PATH=data/
    DISCORD_BOT_TOKEN=your_discord_bot_token
    GEMINI_API_KEY=your_gemini_api_key
+   GROK_API_KEY=your_grok_api_key
    ```
 6. **Configure YAML Files**: Copy the sample configuration files and modify them as needed.
    ```bash

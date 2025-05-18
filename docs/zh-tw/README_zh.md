@@ -61,8 +61,11 @@ EchordMind 是一個利用 AI 在 Discord 上進行智慧、具上下文感知�
     ```env'
     USER_ID=你的_discord_用戶ID
     LOG_LEVEL=INFO
+    LANG=zh-tw              # 目前支援 en-us, zh-tw
+    VECTOR_DB_PATH=data/
     DISCORD_BOT_TOKEN=你的_discord_機器人令牌
     GEMINI_API_KEY=你的_gemini_api_密鑰
+    GROK_API_KEY=你的_grok_api_密鑰
    ```
    > **注意**：`USER_ID` 目前用於在機器人啟動時發送測試訊息。此為臨時功能，未來版本可能會移除。~~不過必須承認這個方法挺有用，至少對個人使用來說...~~
 

@@ -63,8 +63,11 @@
    ```env
    USER_ID=您的_discord_用戶ID
    LOG_LEVEL=DEBUG                          # 獲得更多除錯資訊
-   DISCORD_BOT_TOKEN=您的_discord_機器人令牌
-   GEMINI_API_KEY=您的_gemini_api_密鑰
+   LANG=zh-tw                               # 目前支援 en-us, zh-tw
+   VECTOR_DB_PATH=data/
+   DISCORD_BOT_TOKEN=你的_discord_機器人令牌
+   GEMINI_API_KEY=你的_gemini_api_密鑰
+   GROK_API_KEY=你的_grok_api_密鑰
    ```
 6. **配置 YAML 文件**：複製範例配置文件並根據需要修改。
    ```bash
