@@ -2,6 +2,7 @@ import os
 
 import discord
 import asyncio
+import shutil
 from discord.ext import commands
 from dotenv import load_dotenv
 from src import setup_logger
@@ -30,6 +31,19 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def on_ready():
     log.info(f'Logged in as {bot.user.name} (ID: {bot.user.id})')
     log.info('Bot is ready and listening for DMs.')
+    
+    # if there is a temp_chroma_db folder, move it to chroma_db
+    data_path = os.path.join(os.getcwd(), os.getenv("VECTOR_DB_PATH"))
+    if os.path.exists(os.path.join(data_path, 'temp_chroma_db')):
+        mark_file = os.path.join(data_path, 'temp_chroma_db', '.valid')
+        if os.path.isfile(mark_file):
+            os.remove(mark_file)
+            shutil.rmtree(os.path.join(data_path, 'chroma_db'))
+            os.rename(os.path.join(data_path, 'temp_chroma_db'), os.path.join(data_path, 'chroma_db'))
+        else:
+            log.warning("Found an incomplete temp chroma database, execution will proceed to clear it.")
+            shutil.rmtree(os.path.join(data_path, 'temp_chroma_db'))
+    
     await load_cogs()
     
     ### temporary, try to find a better way to dm user ###
