@@ -5,12 +5,12 @@ from src import setup_logger
 import os
 import asyncio
 from datetime import datetime
+from semantic_text_splitter import MarkdownSplitter
 from core import Cog_Extension
 from src import AppConfig
 from src.llm import LLMServiceInterface
 from src.memory_service import MemoryService
 from src.utils.core_utils import get_localized_choices, get_localized_name_from_value
-from src import split_markdown_message
 from src.llm.factory import get_llm_service
 from src.embedding.factory import get_embedding_service
 from src.vector_store.factory import get_vector_store
@@ -27,6 +27,8 @@ TEMPERATURE_LEVELS = [
 BINARY_STATES_CALCULATOR = lambda i, val: 1 - i                     # enable --> 1, disable --> 0
 TEMPERATURE_LEVELS_CALCULATOR = lambda i, val: round(i * 0.2, 1)    # 0.2 is the step size
 
+CHUNK_SIZE = 2000                                                   # Discord message limit is 2000 characters
+splitter = MarkdownSplitter(CHUNK_SIZE)
 
 class ConversationCog(Cog_Extension):
     def __init__(self, bot: commands.Bot, llm_service: LLMServiceInterface, memory_service: MemoryService, config: AppConfig):
@@ -97,9 +99,8 @@ class ConversationCog(Cog_Extension):
                 # --- response and memory update ---
                 if bot_response:
                     # send response
-                    chunk_size = 2000   # Discord message limit is 2000 characters
-                    if len(bot_response) > 2000:
-                        chunks = split_markdown_message(bot_response, chunk_size)
+                    if len(bot_response) > CHUNK_SIZE:
+                        chunks = splitter.chunks(bot_response)
                         for chunk in chunks:
                             await message.author.send(chunk)
                     else:
